@@ -10,14 +10,20 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File;
     if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
 
+    // Validate MIME type before processing
+    if (file.type !== "application/pdf") {
+      return NextResponse.json({ error: "Invalid file type. Please upload a PDF." }, { status: 400 });
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
-    const parser = new PDFParse({ data: buffer });
+    // pdf-parse v2: pass data in constructor as Uint8Array, then call getText() directly
+    const parser = new PDFParse({ data: new Uint8Array(buffer) });
     const pdfResult = await parser.getText();
     const pdfText = pdfResult.text;
     
     // UPDATED PROMPT: We no longer ask the LLM to calculate the total.
     // We only ask it to extract the raw integers/decimals.
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const prompt = `
       You are a Forensic Financial Auditor. Analyze the contract text.
       1. Extract the exact Principal Amount (as a number), APR/Interest Rate (as a number, e.g., 15.5), and Loan Term in months (as a number).
@@ -40,7 +46,14 @@ export async function POST(req: NextRequest) {
     
     // Strip out markdown formatting if the LLM stubbornly includes it
     let responseText = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
-    const analysis = JSON.parse(responseText);
+
+    // Safely guard against malformed JSON from the LLM
+    let analysis;
+    try {
+      analysis = JSON.parse(responseText);
+    } catch {
+      return NextResponse.json({ error: "AI returned invalid JSON. Please try again." }, { status: 502 });
+    }
 
     // --- ARCHITECT-ZERO DETERMINISTIC MATH ENGINE ---
     let finalPayback = 0;

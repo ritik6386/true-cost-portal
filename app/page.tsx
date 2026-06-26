@@ -7,14 +7,26 @@ import { Upload, ShieldCheck, Calculator, FileSearch } from "lucide-react";
 import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+interface AnalysisResult {
+  principal: number;
+  apr: number;
+  termMonths: number;
+  gotchas: string[];
+  plainEnglishSummary: string;
+  totalPayback: number | "Error";
+  schedule: { name: string; Interest: number; Principal: number; Remaining: number }[];
+}
+
 export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
-  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFile = async (file: File) => {
     setLoading(true);
     setAnalysis(null);
+    setError(null);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -24,9 +36,9 @@ export default function Home() {
       const data = await response.json();
 
       setAnalysis(data);
-    } catch (error) {
-      console.error("Analysis failed:", error);
-      alert("Analysis failed. Please check your PDF and try again.");
+    } catch (err) {
+      console.error("Analysis failed:", err);
+      setError("Analysis failed. Please check your PDF and try again.");
     } finally {
       setLoading(false);
     }
@@ -72,6 +84,7 @@ export default function Home() {
             <input 
               type="file" 
               id="file-upload" 
+              accept=".pdf,application/pdf"
               className="hidden" 
               onChange={(e) => {
                 const selectedFile = e.target.files?.[0];
@@ -89,6 +102,12 @@ export default function Home() {
       </motion.div>
 
       {loading && <p className="mt-8 text-blue-600 animate-pulse text-lg">Analyzing fine print... Calculating total cost...</p>}
+
+      {error && (
+        <div className="mt-8 w-full max-w-2xl bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm text-center">
+          ⚠️ {error}
+        </div>
+      )}
 
       {analysis && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-12 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6">
