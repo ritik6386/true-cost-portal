@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PDFParse } from "pdf-parse";
+import { extractText } from "unpdf";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -15,11 +15,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid file type. Please upload a PDF." }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    // pdf-parse v2: pass data in constructor as Uint8Array, then call getText() directly
-    const parser = new PDFParse({ data: new Uint8Array(buffer) });
-    const pdfResult = await parser.getText();
-    const pdfText = pdfResult.text;
+    // unpdf: pure WebAssembly PDF parser — works in all environments including Vercel serverless
+    const arrayBuffer = await file.arrayBuffer();
+    const { text: pages } = await extractText(new Uint8Array(arrayBuffer), { mergePages: true });
+    const pdfText = Array.isArray(pages) ? pages.join("\n") : String(pages);
 
     const prompt = `
       You are a Forensic Financial Auditor. Analyze the contract text.
@@ -56,15 +55,15 @@ export async function POST(req: NextRequest) {
                             msg.includes("not found");
         if (isRetryable) {
           console.warn(`Model ${modelName} unavailable, trying next...`);
-          continue; // try next model
+          continue;
         }
-        throw err; // non-retryable error — rethrow immediately
+        throw err;
       }
     }
     if (!result) throw lastError;
 
     // Strip out markdown formatting if the LLM stubbornly includes it
-    let responseText = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+    const responseText = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
 
     // Safely guard against malformed JSON from the LLM
     let analysis;
@@ -74,9 +73,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "AI returned invalid JSON. Please try again." }, { status: 502 });
     }
 
-    // --- ARCHITECT-ZERO DETERMINISTIC MATH ENGINE ---
+    // --- DETERMINISTIC MATH ENGINE ---
     let finalPayback = 0;
-    let schedule = [];
+    const schedule: { name: string; Interest: number; Principal: number; Remaining: number }[] = [];
 
     const P = analysis.principal;
     const apr = analysis.apr;
@@ -86,11 +85,10 @@ export async function POST(req: NextRequest) {
       if (apr === 0 || !apr) {
         finalPayback = P;
       } else {
-        const r = (apr / 100) / 12; // Monthly rate
-        const M = P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1); // Monthly payment
+        const r = (apr / 100) / 12;
+        const M = P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
         finalPayback = parseFloat((M * n).toFixed(2));
 
-        // Generate the month-by-month timeline for the chart
         let currentBalance = P;
         let cumulativeInterest = 0;
         let cumulativePrincipal = 0;
@@ -98,19 +96,17 @@ export async function POST(req: NextRequest) {
         for (let month = 1; month <= n; month++) {
           const interestPayment = currentBalance * r;
           const principalPayment = M - interestPayment;
-          
+
           currentBalance -= principalPayment;
           cumulativeInterest += interestPayment;
           cumulativePrincipal += principalPayment;
 
-          // We only save every 12th month (yearly) to keep the chart clean, 
-          // plus the very last month.
           if (month % 12 === 0 || month === n) {
             schedule.push({
               name: `Month ${month}`,
               Interest: parseFloat(cumulativeInterest.toFixed(0)),
               Principal: parseFloat(cumulativePrincipal.toFixed(0)),
-              Remaining: Math.max(0, parseFloat(currentBalance.toFixed(0)))
+              Remaining: Math.max(0, parseFloat(currentBalance.toFixed(0))),
             });
           }
         }
@@ -118,7 +114,7 @@ export async function POST(req: NextRequest) {
     }
 
     analysis.totalPayback = finalPayback > 0 ? finalPayback : "Error";
-    analysis.schedule = schedule; // Attach the timeline to the response
+    analysis.schedule = schedule;
 
     return NextResponse.json(analysis);
 

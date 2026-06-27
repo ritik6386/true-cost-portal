@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pdf-parse", "pdfjs-dist"],
+  // unpdf uses WebAssembly — no serverExternalPackages needed
 };
 
 export default nextConfig;
