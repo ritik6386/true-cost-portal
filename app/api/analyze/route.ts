@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     
     // UPDATED PROMPT: We no longer ask the LLM to calculate the total.
     // We only ask it to extract the raw integers/decimals.
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const prompt = `
       You are a Forensic Financial Auditor. Analyze the contract text.
       1. Extract the exact Principal Amount (as a number), APR/Interest Rate (as a number, e.g., 15.5), and Loan Term in months (as a number).
