@@ -20,10 +20,7 @@ export async function POST(req: NextRequest) {
     const parser = new PDFParse({ data: new Uint8Array(buffer) });
     const pdfResult = await parser.getText();
     const pdfText = pdfResult.text;
-    
-    // UPDATED PROMPT: We no longer ask the LLM to calculate the total.
-    // We only ask it to extract the raw integers/decimals.
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
     const prompt = `
       You are a Forensic Financial Auditor. Analyze the contract text.
       1. Extract the exact Principal Amount (as a number), APR/Interest Rate (as a number, e.g., 15.5), and Loan Term in months (as a number).
@@ -42,8 +39,30 @@ export async function POST(req: NextRequest) {
       Contract Text: ${pdfText.substring(0, 10000)} 
     `;
 
-    const result = await model.generateContent(prompt);
-    
+    // Model fallback chain — tries each in order if one is overloaded (503)
+    const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-001", "gemini-2.0-flash-lite"];
+    let result;
+    let lastError: unknown;
+    for (const modelName of MODELS) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        result = await model.generateContent(prompt);
+        break; // success — stop trying
+      } catch (err: unknown) {
+        lastError = err;
+        const msg = err instanceof Error ? err.message : String(err);
+        const isRetryable = msg.includes("503") || msg.includes("overloaded") ||
+                            msg.includes("Service Unavailable") || msg.includes("404") ||
+                            msg.includes("not found");
+        if (isRetryable) {
+          console.warn(`Model ${modelName} unavailable, trying next...`);
+          continue; // try next model
+        }
+        throw err; // non-retryable error — rethrow immediately
+      }
+    }
+    if (!result) throw lastError;
+
     // Strip out markdown formatting if the LLM stubbornly includes it
     let responseText = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
 
