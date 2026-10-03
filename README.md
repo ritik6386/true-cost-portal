@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# The True Cost
+
+> **Most loan contracts are designed to confuse you. We built this to fix that.**
+
+Drop in any loan agreement, mortgage contract, or auto financing PDF. We scan the fine print, call out the hidden gotchas in plain English, and calculate the exact dollar amount you'll end up paying back.
+
+---
+
+## Why we built this
+
+Ever tried reading a 30-page loan agreement? Banks and lenders bury the details people care about most in dense legal jargon — things like:
+- Prepayment penalties (charging you a fee just for paying off your loan early).
+- Sneaky balloon payments and sudden rate jumps.
+- Mandatory arbitration clauses that strip your legal rights.
+- Deceptively "low" rates that add up to massive interest bills over time.
+
+**The True Cost** cuts through the noise. It extracts the raw terms and runs the real amortization math so you know what you're getting into before you sign.
+
+---
+
+## How it works (and why we don't let AI do the math)
+
+Large language models are great at reading dense legal text, but notoriously bad at doing math without hallucinating.
+
+We use a hybrid approach:
+1. **AI for Reading:** Google Gemini parses the contract to extract the loan principal, APR, term length, and fine-print traps.
+2. **TypeScript for Math:** Our deterministic math engine computes the amortization schedule, monthly payment, and total interest paid using standard financial formulas.
+3. **Interactive Visuals:** You get a clean timeline chart showing exactly how much of your monthly payments go toward interest vs. the actual principal.
+
+---
+
+## Features
+
+- **No AI math hallucinations:** Clean separation between text parsing (Gemini) and calculations (TypeScript).
+- **Plain-English summaries:** Translates legal disclaimers into 2-sentence takeaways anyone can understand.
+- **Hidden gotcha alerts:** Flags penalty fees, variable rate triggers, and clauses that cost you money.
+- **Visual payback timeline:** Interactive chart showing how your balance and interest accumulate over time.
+- **In-memory & private:** Your PDF is processed in memory during the request and never saved to a database or stored on disk.
+- **Serverless & lightweight:** Uses WebAssembly-based PDF parsing (`unpdf`), meaning zero native binary issues on deployment platforms like Vercel.
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### 1. Prerequisites
+- [Node.js](https://nodejs.org/) (v18.18+ or v20+)
+- A [Google Gemini API Key](https://aistudio.google.com/) (free tier works great)
 
+### 2. Install dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Set up your environment
+Create a `.env.local` file in the root folder:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cp .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Add your API key:
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+```
 
-## Learn More
+### 4. Run the development server
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open in your browser and drop in a contract to test it out.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Under the Hood
 
-## Deploy on Vercel
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS v4, Framer Motion
+- **Visuals:** Recharts for amortization area charts, Lucide for icons
+- **AI Model:** Google Gemini 2.0 Flash via `@google/generative-ai`
+- **PDF Extraction:** `unpdf` (pure WebAssembly PDF text parser)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Contributing & Feedback
+
+Have ideas for better clause detection, caught an edge case in a contract format, or want to add support for different amortization types? Pull requests and issues are welcome!
+
+---
+
+## License
+@LIET 
+
+
