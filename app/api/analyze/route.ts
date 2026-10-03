@@ -23,12 +23,15 @@ export async function POST(req: NextRequest) {
     const prompt = `
       You are a Forensic Financial Auditor. Analyze the contract text.
       1. Extract the exact Principal Amount (as a number), APR/Interest Rate (as a number, e.g., 15.5), and Loan Term in months (as a number).
-      2. Identify 3 "Hidden Gotchas".
-      3. Write a 2-sentence Plain English summary of the loan.
+      2. Identify the Currency of the loan document (ISO 3-letter code e.g. INR, USD, EUR, GBP, JPY, CAD, AUD, CHF, BRL, SGD, AED, CNY) and currency symbol. If not explicitly specified otherwise, default to "INR" with symbol "₹".
+      3. Identify 3 "Hidden Gotchas".
+      4. Write a 2-sentence Plain English summary of the loan.
       
       Format your response as a CLEAN JSON object ONLY. Do not include markdown formatting or backticks:
       {
         "principal": number,
+        "currency": "INR",
+        "currencySymbol": "₹",
         "apr": number,
         "termMonths": number,
         "gotchas": ["string", "string", "string"],
