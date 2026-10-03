@@ -82,28 +82,50 @@ export async function POST(req: NextRequest) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Model fallback chain — uses Gemini 3.8 Flash and stable fallbacks
+    // Model fallback chain — uses Gemini 3.8 Flash, followed by stable high-throughput fallbacks
     const MODELS = [
       "gemini-3.8-flash",
       "gemini-3.7-flash",
       "gemini-3.5-flash",
       "gemini-3.5-flash-lite",
+      "gemini-3.1-flash-lite",
     ];
     let result;
     let lastError: unknown;
 
     for (const modelName of MODELS) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        result = await model.generateContent(prompt);
-        if (result?.response?.text()) {
-          break; // success — stop trying
+      // Allow up to 2 attempts for transient 503 / 429 high demand spikes
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelName });
+          result = await model.generateContent(prompt);
+          if (result?.response?.text()) {
+            break; // success — got response
+          }
+        } catch (err: unknown) {
+          lastError = err;
+          const msg = err instanceof Error ? err.message : String(err);
+          const isTransient =
+            msg.includes("503") ||
+            msg.includes("high demand") ||
+            msg.includes("429") ||
+            msg.includes("RESOURCE_EXHAUSTED");
+
+          if (isTransient && attempt === 0) {
+            console.warn(
+              `Model ${modelName} reported high demand (503). Retrying in 1.2s...`
+            );
+            await new Promise((resolve) => setTimeout(resolve, 1200));
+            continue;
+          }
+
+          console.warn(
+            `Model ${modelName} failed (${msg}). Trying next fallback model...`
+          );
+          break; // move to next model
         }
-      } catch (err: unknown) {
-        lastError = err;
-        const msg = err instanceof Error ? err.message : String(err);
-        console.warn(`Model ${modelName} encountered issue: ${msg}. Attempting fallback...`);
       }
+      if (result) break;
     }
 
     if (!result) {
@@ -112,8 +134,12 @@ export async function POST(req: NextRequest) {
           ? lastError.message
           : "Failed to communicate with AI model.";
       return NextResponse.json(
-        { error: `AI Analysis Error: ${errorMsg}` },
-        { status: 502 }
+        {
+          error:
+            "Google AI servers are currently experiencing high demand. Please try uploading again in a few moments.",
+          details: errorMsg,
+        },
+        { status: 503 }
       );
     }
 
