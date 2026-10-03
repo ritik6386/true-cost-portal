@@ -2,29 +2,68 @@ import { NextRequest, NextResponse } from "next/server";
 import { extractText } from "unpdf";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
-    if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
+    if (!file) {
+      return NextResponse.json({ error: "No file was uploaded." }, { status: 400 });
+    }
 
     // Validate MIME type before processing
-    if (file.type !== "application/pdf") {
-      return NextResponse.json({ error: "Invalid file type. Please upload a PDF." }, { status: 400 });
+    if (file.type !== "application/pdf" && !file.name.endsWith(".pdf")) {
+      return NextResponse.json(
+        { error: "Invalid file type. Please upload a valid PDF document." },
+        { status: 400 }
+      );
+    }
+
+    // Check API Key
+    const apiKey = process.env.GEMINI_API_KEY?.trim();
+    if (!apiKey) {
+      return NextResponse.json(
+        {
+          error:
+            "Gemini API key is missing. Please add your GEMINI_API_KEY in .env.local and restart the server.",
+        },
+        { status: 500 }
+      );
     }
 
     // unpdf: pure WebAssembly PDF parser — works in all environments including Vercel serverless
     const arrayBuffer = await file.arrayBuffer();
-    const { text: pages } = await extractText(new Uint8Array(arrayBuffer), { mergePages: true });
-    const pdfText = Array.isArray(pages) ? pages.join("\n") : String(pages);
+    let pdfText = "";
+    try {
+      const { text: pages } = await extractText(new Uint8Array(arrayBuffer), {
+        mergePages: true,
+      });
+      pdfText = Array.isArray(pages) ? pages.join("\n") : String(pages || "");
+    } catch (parseErr) {
+      console.error("PDF Parsing Error:", parseErr);
+      return NextResponse.json(
+        {
+          error:
+            "Could not parse the PDF file. The file may be password protected or corrupted.",
+        },
+        { status: 422 }
+      );
+    }
+
+    if (!pdfText || pdfText.trim().length < 20) {
+      return NextResponse.json(
+        {
+          error:
+            "No readable text found in this PDF. It appears to be an image-only scan without an OCR text layer. Please upload a PDF with selectable text.",
+        },
+        { status: 422 }
+      );
+    }
 
     const prompt = `
       You are a Forensic Financial Auditor. Analyze the contract text.
       1. Extract the exact Principal Amount (as a number), APR/Interest Rate (as a number, e.g., 15.5), and Loan Term in months (as a number).
       2. Identify the Currency of the loan document (ISO 3-letter code e.g. INR, USD, EUR, GBP, JPY, CAD, AUD, CHF, BRL, SGD, AED, CNY) and currency symbol. If not explicitly specified otherwise, default to "INR" with symbol "₹".
-      3. Identify 3 "Hidden Gotchas".
+      3. Identify 3 "Hidden Gotchas" or predatory terms in the fine print.
       4. Write a 2-sentence Plain English summary of the loan.
       
       Format your response as a CLEAN JSON object ONLY. Do not include markdown formatting or backticks:
@@ -38,58 +77,76 @@ export async function POST(req: NextRequest) {
         "plainEnglishSummary": "string"
       }
 
-      Contract Text: ${pdfText.substring(0, 10000)} 
+      Contract Text: ${pdfText.substring(0, 15000)} 
     `;
 
-    // Model fallback chain — tries each in order if one is overloaded (503)
-    const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-001", "gemini-2.0-flash-lite"];
+    const genAI = new GoogleGenerativeAI(apiKey);
+
+    // Model fallback chain — uses Gemini 3.8 Flash and stable fallbacks
+    const MODELS = [
+      "gemini-3.8-flash",
+      "gemini-3.7-flash",
+      "gemini-3.5-flash",
+      "gemini-3.5-flash-lite",
+    ];
     let result;
     let lastError: unknown;
+
     for (const modelName of MODELS) {
       try {
         const model = genAI.getGenerativeModel({ model: modelName });
         result = await model.generateContent(prompt);
-        break; // success — stop trying
+        if (result?.response?.text()) {
+          break; // success — stop trying
+        }
       } catch (err: unknown) {
         lastError = err;
         const msg = err instanceof Error ? err.message : String(err);
-        const isRetryable = msg.includes("503") || msg.includes("overloaded") ||
-                            msg.includes("Service Unavailable") || msg.includes("404") ||
-                            msg.includes("not found");
-        if (isRetryable) {
-          console.warn(`Model ${modelName} unavailable, trying next...`);
-          continue;
-        }
-        throw err;
+        console.warn(`Model ${modelName} encountered issue: ${msg}. Attempting fallback...`);
       }
     }
-    if (!result) throw lastError;
 
-    // Strip out markdown formatting if the LLM stubbornly includes it
-    const responseText = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+    if (!result) {
+      const errorMsg =
+        lastError instanceof Error
+          ? lastError.message
+          : "Failed to communicate with AI model.";
+      return NextResponse.json(
+        { error: `AI Analysis Error: ${errorMsg}` },
+        { status: 502 }
+      );
+    }
 
-    // Safely guard against malformed JSON from the LLM
+    // Strip out markdown formatting if the LLM includes it
+    const rawText = result.response.text();
+    const responseText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+
+    // Safely parse JSON from the LLM
     let analysis;
     try {
       analysis = JSON.parse(responseText);
     } catch {
-      return NextResponse.json({ error: "AI returned invalid JSON. Please try again." }, { status: 502 });
+      console.error("Malformed AI response text:", responseText);
+      return NextResponse.json(
+        { error: "AI returned invalid response format. Please try again." },
+        { status: 502 }
+      );
     }
 
     // --- DETERMINISTIC MATH ENGINE ---
     let finalPayback = 0;
     const schedule: { name: string; Interest: number; Principal: number; Remaining: number }[] = [];
 
-    const P = analysis.principal;
-    const apr = analysis.apr;
-    const n = analysis.termMonths;
+    const P = Number(analysis.principal);
+    const apr = Number(analysis.apr);
+    const n = Number(analysis.termMonths);
 
-    if (P && n) {
-      if (apr === 0 || !apr) {
+    if (P && n && !isNaN(P) && !isNaN(n)) {
+      if (apr === 0 || !apr || isNaN(apr)) {
         finalPayback = P;
       } else {
         const r = (apr / 100) / 12;
-        const M = P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+        const M = (P * (r * Math.pow(1 + r, n))) / (Math.pow(1 + r, n) - 1);
         finalPayback = parseFloat((M * n).toFixed(2));
 
         let currentBalance = P;
@@ -116,13 +173,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    analysis.totalPayback = finalPayback > 0 ? finalPayback : "Error";
+    analysis.principal = P || 0;
+    analysis.apr = apr || 0;
+    analysis.termMonths = n || 0;
+    analysis.totalPayback = finalPayback > 0 ? finalPayback : P || 0;
     analysis.schedule = schedule;
 
     return NextResponse.json(analysis);
-
   } catch (error) {
     console.error("Analysis Error:", error);
-    return NextResponse.json({ error: "Analysis failed" }, { status: 500 });
+    const errorMsg =
+      error instanceof Error ? error.message : "Failed to analyze document.";
+    return NextResponse.json({ error: errorMsg }, { status: 500 });
   }
 }
