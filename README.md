@@ -1,4 +1,4 @@
-# The True Cost Portal 
+# True Cost Portal
 
 > **Most loan contracts are designed to confuse you. We built this to fix that.**
 
@@ -14,7 +14,7 @@ Ever tried reading a 30-page loan agreement? Banks and lenders bury the details 
 - Mandatory arbitration clauses that strip your legal rights.
 - Deceptively "low" rates that add up to massive interest bills over time.
 
-**The True Cost** cuts through the noise. It extracts the raw terms and runs the real amortization math so you know what you're getting into before you sign.
+**True Cost Portal** cuts through the noise. It extracts the raw terms and runs the real amortization math so you know what you're getting into before you sign.
 
 ---
 
@@ -38,6 +38,7 @@ We use a hybrid approach:
 - **In-memory & private:** Your PDF is processed in memory during the request and never saved to a database or stored on disk.
 - **Serverless & lightweight:** Uses WebAssembly-based PDF parsing (`unpdf`), meaning zero native binary issues on deployment platforms like Vercel.
 
+---
 
 ## Under the Hood
 
@@ -55,7 +56,4 @@ Have ideas for better clause detection, caught an edge case in a contract format
 ---
 
 ## License
-@LIET// ritik.2vedi
-
-
-
+@LIET/ ritik.2vedi

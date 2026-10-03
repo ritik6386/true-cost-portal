@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The True Cost",
+  title: "True Cost Portal",
   description: "Expose the true cost of loans hidden in fine print. Upload any credit agreement or loan PDF to see the actual math banks hide.",
 };
 
@@ -28,7 +28,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col font-sans bg-slate-50 text-slate-900 selection:bg-blue-100 selection:text-blue-900">
+        {children}
+      </body>
     </html>
   );
 }
