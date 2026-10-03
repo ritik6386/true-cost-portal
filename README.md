@@ -38,39 +38,6 @@ We use a hybrid approach:
 - **In-memory & private:** Your PDF is processed in memory during the request and never saved to a database or stored on disk.
 - **Serverless & lightweight:** Uses WebAssembly-based PDF parsing (`unpdf`), meaning zero native binary issues on deployment platforms like Vercel.
 
----
-
-## Getting Started
-
-### 1. Prerequisites
-- [Node.js](https://nodejs.org/) (v18.18+ or v20+)
-- A [Google Gemini API Key](https://aistudio.google.com/) (free tier works great)
-
-### 2. Install dependencies
-```bash
-npm install
-```
-
-### 3. Set up your environment
-Create a `.env.local` file in the root folder:
-
-```bash
-cp .env.example .env.local
-```
-
-Add your API key:
-```env
-GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-### 4. Run the development server
-```bash
-npm run dev
-```
-
-Open in your browser and drop in a contract to test it out.
-
----
 
 ## Under the Hood
 
@@ -88,6 +55,7 @@ Have ideas for better clause detection, caught an edge case in a contract format
 ---
 
 ## License
-@LIET 
+@LIET// ritik.2vedi
+
 
 
