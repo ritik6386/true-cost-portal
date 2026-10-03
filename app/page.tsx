@@ -997,6 +997,30 @@ export default function Home() {
                   </div>
                 </div>
               )}
+
+              {/* Legal & Financial Advisory Warning Disclaimer */}
+              <div
+                className={`p-4 rounded-2xl border text-xs flex items-start gap-3 transition-colors ${
+                  isDark
+                    ? "bg-zinc-900/50 border-zinc-800/80 text-zinc-400"
+                    : "bg-amber-50/80 border-amber-200/90 text-amber-950"
+                }`}
+              >
+                <AlertTriangle
+                  size={16}
+                  className={`shrink-0 mt-0.5 ${
+                    isDark ? "text-amber-400" : "text-amber-600"
+                  }`}
+                />
+                <div>
+                  <span className="font-semibold block mb-0.5">
+                    User Notice: Not Legal or Financial Advice
+                  </span>
+                  <p className="leading-relaxed opacity-90">
+                    True Cost Portal provides automated algorithmic evaluations for informational purposes only. It does not constitute formal legal, financial, tax, or credit advisory services. Financial contracts are legally binding instruments; always consult a certified financial advisor or legal counsel before signing.
+                  </p>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1136,6 +1160,11 @@ export default function Home() {
               ritik.2vedi
             </a>
           </div>
+        </div>
+
+        {/* Legal Disclaimer Footnote */}
+        <div className="max-w-5xl mx-auto px-6 mt-4 pt-4 border-t border-slate-200/60 dark:border-zinc-900 text-center text-[11px] text-slate-400 dark:text-zinc-600">
+          Disclaimer: True Cost Portal is an automated analysis tool for informational purposes only and does not constitute certified legal, financial, or tax advice. Consult a licensed professional before executing any credit agreement.
         </div>
       </footer>
     </div>
