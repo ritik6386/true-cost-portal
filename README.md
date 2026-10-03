@@ -1,4 +1,4 @@
-# The True Cost
+# The True Cost Portal 
 
 > **Most loan contracts are designed to confuse you. We built this to fix that.**
 
