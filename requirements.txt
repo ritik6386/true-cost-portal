@@ -1,0 +1,8 @@
+# Hybrid PDF OCR Pipeline Dependencies
+# Note: For PaddleOCR, Python 3.10 or 3.11 is recommended.
+# PaddlePaddle does not currently provide pre-built Windows wheels for Python 3.14.
+
+pymupdf>=1.24.0
+paddlepaddle>=2.6.0
+paddleocr>=2.7.0
+pillow>=10.0.0

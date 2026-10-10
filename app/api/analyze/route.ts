@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractText } from "unpdf";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
+import { extractPdfContent } from "@/lib/document-extractor";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,37 +30,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // unpdf: pure WebAssembly PDF parser — works in all environments including Vercel serverless
+    // Hybrid Document Extractor:
+    // 1. Digital PDF -> Direct fast text extraction (no OCR needed)
+    // 2. Scanned PDF -> Fallback to PaddleOCR (services/document_extractor.py)
+    // 3. Fallback safety net -> Multimodal Gemini document vision
     const arrayBuffer = await file.arrayBuffer();
-    let pdfText = "";
-    try {
-      const { text: pages } = await extractText(new Uint8Array(arrayBuffer), {
-        mergePages: true,
-      });
-      pdfText = Array.isArray(pages) ? pages.join("\n") : String(pages || "");
-    } catch (parseErr) {
-      console.error("PDF Parsing Error:", parseErr);
-      return NextResponse.json(
-        {
-          error:
-            "Could not parse the PDF file. The file may be password protected or corrupted.",
-        },
-        { status: 422 }
-      );
-    }
+    const extraction = await extractPdfContent(arrayBuffer);
 
-    if (!pdfText || pdfText.trim().length < 20) {
-      return NextResponse.json(
-        {
-          error:
-            "No readable text found in this PDF. It appears to be an image-only scan without an OCR text layer. Please upload a PDF with selectable text.",
-        },
-        { status: 422 }
-      );
-    }
+    const hasExtractedText = extraction.text && extraction.text.trim().length > 0;
 
     const prompt = `
-      You are a Forensic Financial Auditor. Analyze the contract text.
+      You are a Forensic Financial Auditor. Analyze the contract ${hasExtractedText ? "text" : "document"}.
       1. Extract the exact Principal Amount (as a number), APR/Interest Rate (as a number, e.g., 15.5), and Loan Term in months (as a number).
       2. Identify the Currency of the loan document (ISO 3-letter code e.g. INR, USD, EUR, GBP, JPY, CAD, AUD, CHF, BRL, SGD, AED, CNY) and currency symbol. If not explicitly specified otherwise, default to "INR" with symbol "₹".
       3. Identify 3 "Hidden Gotchas" or predatory terms in the fine print.
@@ -77,18 +57,30 @@ export async function POST(req: NextRequest) {
         "plainEnglishSummary": "string"
       }
 
-      Contract Text: ${pdfText.substring(0, 15000)} 
+      ${hasExtractedText ? `Contract Text:\n${extraction.text.substring(0, 30000)}` : "Please review the attached scanned contract document, extract the text/terms via OCR, and return the structured financial data."}
     `;
+
+    // Build payload: if scanned document without extracted text layer, pass PDF inline for multimodal OCR
+    const contentPayload: (string | Part)[] = [prompt];
+    if (!hasExtractedText) {
+      contentPayload.push({
+        inlineData: {
+          data: Buffer.from(arrayBuffer).toString("base64"),
+          mimeType: "application/pdf",
+        },
+      });
+    }
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Model fallback chain — uses Gemini 3.8 Flash, followed by stable high-throughput fallbacks
+    // Model fallback chain (prioritizing available high-speed multimodal models)
     const MODELS = [
+      "gemini-2.0-flash",
+      "gemini-1.5-flash",
+      "gemini-2.5-flash",
       "gemini-3.8-flash",
       "gemini-3.7-flash",
       "gemini-3.5-flash",
-      "gemini-3.5-flash-lite",
-      "gemini-3.1-flash-lite",
     ];
     let result;
     let lastError: unknown;
@@ -98,7 +90,7 @@ export async function POST(req: NextRequest) {
       for (let attempt = 0; attempt < 2; attempt++) {
         try {
           const model = genAI.getGenerativeModel({ model: modelName });
-          result = await model.generateContent(prompt);
+          result = await model.generateContent(contentPayload);
           if (result?.response?.text()) {
             break; // success — got response
           }
