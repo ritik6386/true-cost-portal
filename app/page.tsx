@@ -214,7 +214,7 @@ export default function Home() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to analyze document.");
+        throw new Error(errorData.error || errorData.detail || "Failed to analyze document.");
       }
 
       const data = await response.json();

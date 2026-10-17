@@ -6,48 +6,52 @@
 
 ---
 
-## Architecture: Hybrid LLM + Deterministic Math
+### Architecture: Decoupled Python FastAPI + Next.js
 
 Large language models excel at comprehending complex legal contracts, but are prone to compounding hallucinations when calculating financial amortization schedules. 
 
-True Cost Portal enforces a strict separation of concerns:
+True Cost Portal enforces a strict separation of concerns across a decoupled Client-API architecture:
 ```
-┌─────────────────────────┐       ┌──────────────────────────────┐       ┌─────────────────────────┐
-│   Contract PDF Upload   │  ──►  │    Gemini 3.8 Flash Model    │  ──►  │   Deterministic Engine  │
-│  (In-Memory WASM Parse) │       │ (Extract Terms, APR, Traps)  │       │ (Pure TypeScript Math)  │
-└─────────────────────────┘       └──────────────────────────────┘       └─────────────────────────┘
-                                                                                      │
-                                                                                      ▼
-                                                                         ┌─────────────────────────┐
-                                                                         │ Interactive Audit Report│
-                                                                         │  & Amortization Visuals │
-                                                                         └─────────────────────────┘
+┌─────────────────────────────────┐        ┌────────────────────────────────────────────────────────┐
+│     Next.js 16 Presentation     │  ───►  │             Python FastAPI Asynchronous Backend        │
+│   (Dropzone, UI, Theme, Charts) │  ◄───  │             (Port 8000 / Proxy rewrite on /api/*)      │
+└─────────────────────────────────┘        └────────────────────────────────────────────────────────┘
+                                                                        │
+                                           ┌────────────────────────────┼───────────────────────────┐
+                                           │                            │                           │
+                                           ▼                            ▼                           ▼
+                             ┌───────────────────────────┐┌───────────────────────────┐┌───────────────────────────┐
+                             │    Document Extractor     ││  Gemini 3.8 Flash Client  ││   Amortization Engine     │
+                             │   (100% In-Memory PyMuPDF)││ (Structured Pydantic JSON)││   (Pure Python Math)      │
+                             └───────────────────────────┘└───────────────────────────┘└───────────────────────────┘
 ```
 
-1. **Semantic Extraction:** Google Gemini reads the contract text to extract key parameters: Principal, APR, Term length, Currency, and fine-print "Gotchas" (prepayment penalties, surge default rates, arbitration mandates).
-2. **Deterministic Calculation:** A pure TypeScript mathematical engine computes exact monthly EMIs, total interest accrual, remaining balances, and periodic amortization schedules.
-3. **Zero-Knowledge Memory:** PDFs are processed in volatile RAM via WebAssembly (`unpdf`) and immediately garbage-collected. No database, zero disk persistence, and no third-party tracking.
+1. **In-Memory Text Extraction:** PyMuPDF parses uploaded loan PDF bytes entirely in volatile memory with zero temporary disk writes, maintaining a strict Zero-Knowledge privacy model.
+2. **Forensic Semantic Parsing:** Google Gemini (via the `google-genai` SDK) analyzes contract clauses using strict Pydantic v2 structured output enforcement (`response_schema`), extracting Principal, APR, Term length, Currency, and fine-print "Gotchas".
+3. **Deterministic Math Calculation:** An isolated Python `AmortizationEngine` computes monthly EMIs, total interest accrual, remaining balances, and periodic milestone schedules.
+4. **Interactive Audit Dashboard:** Next.js proxies `/api/*` to the FastAPI backend and visualizes the audited liabilities via Recharts and Framer Motion.
 
 ---
 
-## Key Features & Recent Enhancements
+## Key Features & Capabilities
 
-### 1. Dual-Theme Engine (Daylight & Night Mode)
+### 1. High-Performance Asynchronous Python FastAPI Backend
+- **Dedicated Microservice:** Fully decoupled backend running on Uvicorn (`http://127.0.0.1:8000`) with auto-generated OpenAPI documentation at `/docs` and `/redoc`.
+- **Zero-Disk In-Memory Processing:** True Zero-Knowledge memory processing without writing any uploaded contracts to disk.
+- **Strict Pydantic v2 Schema Validation:** Automatic schema enforcement guarantees exact output typing without brittle regex sanitization.
+
+### 2. Dual-Theme Engine (Daylight & Night Mode)
 - **Primary Daylight Aesthetic:** Clean, daylight-optimized theme using subtle slate surfaces, royal blue accents, and high-contrast typography.
 - **Sophisticated Night Mode:** Dark aesthetic (`bg-zinc-950`) featuring neon purple and cyan ambient glow fields, glowing dashed dropzone borders, and glassmorphic cards.
-- **Interactive Switcher:** Instant theme toggling via header button, automatically persisting user preferences in `localStorage`.
 
-### 2. Global Multi-Currency System (INR Default)
+### 3. Global Multi-Currency System (INR Default)
 - **Primary Indian Rupee (`INR` / `₹`) Calculation:** Standardized default calculation and localized formatting (`en-IN`) for Indian loans and EMIs.
 - **Autonomous Currency Detection:** The AI forensic parser inspects uploaded contracts to detect native currency units (`USD`, `EUR`, `GBP`, `JPY`, `CAD`, `AUD`, `CHF`, `BRL`, `SGD`, `AED`, `CNY`) and automatically recalculates all charts and metrics in that currency.
-- **Manual Currency Selector:** Interactive header dropdown allowing instant conversion across 12 global currencies.
 
-### 3. Upgraded Gemini 3.8 Flash Integration
+### 4. Upgraded Gemini 3.8 Flash Integration
 - **Next-Gen Model Pipeline:** Upgraded model execution pipeline targeting GA `gemini-3.8-flash` with multi-tier resilient fallback (`gemini-3.7-flash`, `gemini-3.5-flash`).
-- **Comprehensive Diagnostics:** Real-time validation for missing environment variables, detailed API exception handling, and guardrails for scanned/non-OCR PDFs.
-
-### 4. Cross-Platform Build Determinism
-- **Consistent Compiler Flags:** Configured `forceConsistentCasingInFileNames: true` in `tsconfig.json` ensuring seamless compilation parity between Windows, macOS, and Linux CI/CD environments.
+- **Resilient Retry Policy:** Configured exponential backoff via `tenacity` for transient network spikes.
+- **Scanned PDF Fallback:** Seamless multimodal vision OCR fallback for non-digital or scanned contracts.
 
 ---
 
@@ -55,42 +59,90 @@ True Cost Portal enforces a strict separation of concerns:
 
 ```
 true-cost-portal/
-├── app/
-│   ├── api/
-│   │   └── analyze/
-│   │       └── route.ts         # PDF text extraction & Gemini 3.8 Flash audit pipeline
-│   ├── favicon.ico              # Application favicon
-│   ├── globals.css              # Design tokens, Tailwind CSS v4 setup & theme variables
-│   ├── layout.tsx               # Root application shell with dynamic theme provider
-│   └── page.tsx                 # Core UI: Dropzone, Currency Selector, Theme Engine & Charts
-├── components/
-│   └── ui/                      # Reusable UI primitives (Cards, Buttons)
+├── backend/                             # Python FastAPI Asynchronous Backend
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── v1/
+│   │   │       ├── endpoints/
+│   │   │       │   ├── analyze.py       # POST /api/v1/analyze & /api/analyze
+│   │   │       │   └── health.py        # GET /api/v1/health & /api/health
+│   │   │       └── router.py            # API V1 router aggregation
+│   │   ├── core/
+│   │   │   └── config.py                # Pydantic BaseSettings & env loader
+│   │   ├── schemas/
+│   │   │   └── analysis.py              # Pydantic v2 domain models
+│   │   ├── services/
+│   │   │   ├── amortization.py          # Deterministic financial math engine
+│   │   │   ├── document_extractor.py    # In-memory PyMuPDF extractor
+│   │   │   ├── gemini_service.py        # Google GenAI SDK structured client
+│   │   │   └── audit_service.py         # Forensic pipeline coordinator
+│   │   └── main.py                      # FastAPI application & middleware
+│   ├── tests/
+│   │   └── test_backend.py              # Pytest test suite
+│   └── requirements.txt                 # Backend Python dependencies
+│
+├── app/                                 # Next.js 16 Presentation Layer
+│   ├── favicon.ico
+│   ├── globals.css                      # Design tokens, Tailwind CSS v4 setup
+│   ├── layout.tsx                       # Root layout & theme provider
+│   └── page.tsx                         # Core UI: Dropzone, Currency, Charts
+├── components/                          # Reusable UI primitives
 ├── lib/
-│   └── utils.ts                 # Class merger utilities (clsx + tailwind-merge)
-├── .env.example                 # Template for required environment variables
-├── .env.local                   # Local secret configuration (git-ignored)
-├── .gitignore                   # Version control ignore rules
-├── components.json              # Shadcn component configuration
-├── eslint.config.mjs            # ESLint 9 configuration
-├── next.config.ts               # Next.js configuration
-├── package.json                 # Project dependencies & scripts
-├── postcss.config.mjs           # PostCSS configuration for Tailwind CSS v4
-├── tsconfig.json                # TypeScript compiler settings (strict mode & casing rules)
-└── README.md                    # Project documentation
+│   └── utils.ts                         # Class merger utilities (clsx + tailwind-merge)
+├── next.config.ts                       # Proxies /api/* requests to FastAPI backend
+├── package.json                         # Scripts & unified runners
+└── README.md                            # Documentation
+```
+
+---
+
+## Getting Started
+
+### 1. Setup Backend (Python FastAPI)
+```bash
+# Navigate to backend
+cd backend
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run test suite
+python -m pytest tests -v
+
+# Start FastAPI dev server on port 8000
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+### 2. Setup Frontend (Next.js)
+```bash
+# In the project root
+npm install
+
+# Run dev server on port 3000
+npm run dev
+```
+
+### 3. Unified Runner (Both Services)
+```bash
+# Runs Next.js frontend (3000) and FastAPI backend (8000) concurrently
+npm run dev:all
 ```
 
 ---
 
 ## Tech Stack
 
-- **Framework:** [Next.js 16](https://nextjs.org/) (App Router, Turbopack)
-- **Language:** [TypeScript 5](https://www.typescriptlang.org/)
+- **Backend Framework:** [FastAPI](https://fastapi.tiangolo.com/) (ASGI, Python 3.10+)
+- **Server:** [Uvicorn](https://www.uvicorn.org/)
+- **Data Validation:** [Pydantic v2](https://docs.pydantic.dev/)
+- **PDF Extraction:** [PyMuPDF](https://pymupdf.readthedocs.io/) (100% In-Memory RAM execution)
+- **AI Engine:** [Google Gemini 3.8 Flash](https://ai.google.dev/) via official `google-genai` SDK
+- **Frontend Framework:** [Next.js 16](https://nextjs.org/) (App Router, Turbopack)
+- **Language:** [TypeScript 5](https://www.typescriptlang.org/) & [Python 3.10+](https://python.org/)
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
 - **Motion & Transitions:** [Framer Motion](https://www.framer.com/motion/)
 - **Visualizations:** [Recharts](https://recharts.org/)
 - **Iconography:** [Lucide React](https://lucide.dev/)
-- **PDF Extraction:** [unpdf](https://github.com/unjs/unpdf) (WebAssembly text parser)
-- **AI Engine:** [Google Gemini 3.8 Flash](https://ai.google.dev/) via `@google/generative-ai`
 
 ---
 
