@@ -21,11 +21,11 @@ app = FastAPI(
     openapi_url="/openapi.json"
 )
 
-# CORS configuration: support local Next.js frontend proxy and direct API access
+# CORS configuration: support local Next.js, Vercel deployments, and direct API access
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[origin for origin in settings.ALLOWED_ORIGINS if origin != "*"],
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_origin_regex=r"^https?://(.*\.vercel\.app|localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
