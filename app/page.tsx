@@ -29,78 +29,20 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import {
+  CurrencyConfig,
+  SUPPORTED_CURRENCIES,
+  formatCurrency,
+  formatCompactCurrency,
+  adaptSummaryCurrency,
+} from "@/lib/currencies";
 
-export interface CurrencyConfig {
-  code: string;
-  symbol: string;
-  name: string;
-  locale: string;
-}
-
-export const SUPPORTED_CURRENCIES: CurrencyConfig[] = [
-  { code: "INR", symbol: "₹", name: "INR (₹) - Indian Rupee", locale: "en-IN" },
-  { code: "USD", symbol: "$", name: "USD ($) - US Dollar", locale: "en-US" },
-  { code: "EUR", symbol: "€", name: "EUR (€) - Euro", locale: "de-DE" },
-  { code: "GBP", symbol: "£", name: "GBP (£) - British Pound", locale: "en-GB" },
-  { code: "JPY", symbol: "¥", name: "JPY (¥) - Japanese Yen", locale: "ja-JP" },
-  { code: "CAD", symbol: "C$", name: "CAD (C$) - Canadian Dollar", locale: "en-CA" },
-  { code: "AUD", symbol: "A$", name: "AUD (A$) - Australian Dollar", locale: "en-AU" },
-  { code: "CHF", symbol: "CHF", name: "CHF (Fr) - Swiss Franc", locale: "de-CH" },
-  { code: "BRL", symbol: "R$", name: "BRL (R$) - Brazilian Real", locale: "pt-BR" },
-  { code: "SGD", symbol: "S$", name: "SGD (S$) - Singapore Dollar", locale: "en-SG" },
-  { code: "AED", symbol: "AED", name: "AED (د.إ) - UAE Dirham", locale: "ar-AE" },
-  { code: "CNY", symbol: "¥", name: "CNY (¥) - Chinese Yuan", locale: "zh-CN" },
-];
-
-export const formatCurrency = (
-  val: number | "Error",
-  currencyCode: string = "INR"
-): string => {
-  if (typeof val !== "number") return String(val);
-  const config =
-    SUPPORTED_CURRENCIES.find((c) => c.code === currencyCode) ||
-    SUPPORTED_CURRENCIES[0];
-
-  try {
-    return new Intl.NumberFormat(config.locale, {
-      style: "currency",
-      currency: config.code,
-      maximumFractionDigits: 0,
-    }).format(val);
-  } catch {
-    return `${config.symbol}${val.toLocaleString()}`;
-  }
-};
-
-export const formatCompactCurrency = (
-  val: number,
-  currencyCode: string = "INR"
-): string => {
-  const config =
-    SUPPORTED_CURRENCIES.find((c) => c.code === currencyCode) ||
-    SUPPORTED_CURRENCIES[0];
-
-  try {
-    return new Intl.NumberFormat(config.locale, {
-      style: "currency",
-      currency: config.code,
-      notation: "compact",
-      maximumFractionDigits: 1,
-    }).format(val);
-  } catch {
-    return `${config.symbol}${val}`;
-  }
-};
-
-export const adaptSummaryCurrency = (
-  text: string,
-  currencyCode: string
-): string => {
-  const config =
-    SUPPORTED_CURRENCIES.find((c) => c.code === currencyCode) ||
-    SUPPORTED_CURRENCIES[0];
-  // Replace $ or ₹ followed by numbers with the active currency symbol
-  return text.replace(/[$₹]([0-9,.]+)/g, `${config.symbol}$1`);
+export type { CurrencyConfig };
+export {
+  SUPPORTED_CURRENCIES,
+  formatCurrency,
+  formatCompactCurrency,
+  adaptSummaryCurrency,
 };
 
 interface AnalysisResult {
@@ -296,11 +238,10 @@ export default function Home() {
           {/* Brand Logo & Name */}
           <div className="flex items-center gap-3">
             <div
-              className={`size-9 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                isDark
+              className={`size-9 rounded-xl flex items-center justify-center transition-all duration-300 ${isDark
                   ? "bg-gradient-to-br from-purple-500/20 via-zinc-900 to-cyan-500/20 border border-purple-500/40 text-cyan-400 shadow-[0_0_15px_rgba(168,85,247,0.25)]"
                   : "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
-              }`}
+                }`}
             >
               <TrendingDown size={18} strokeWidth={2.2} />
             </div>
@@ -309,11 +250,10 @@ export default function Home() {
                 True Cost Portal
               </span>
               <span
-                className={`text-[11px] font-mono px-2 py-0.5 rounded-full border transition-colors ${
-                  isDark
+                className={`text-[11px] font-mono px-2 py-0.5 rounded-full border transition-colors ${isDark
                     ? "bg-cyan-950/60 border-cyan-800/60 text-cyan-300"
                     : "bg-blue-50 border-blue-200/70 text-blue-700"
-                }`}
+                  }`}
               >
                 v1.2
               </span>
@@ -323,18 +263,16 @@ export default function Home() {
           {/* Privacy Indicator, Global Currency Selector, Theme Toggle, & GitHub */}
           <div className="flex items-center gap-2.5 sm:gap-3.5">
             <div
-              className={`hidden lg:inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono border transition-colors ${
-                isDark
+              className={`hidden lg:inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono border transition-colors ${isDark
                   ? "bg-zinc-900/80 border-zinc-800 text-zinc-400"
                   : "bg-slate-100 border-slate-200 text-slate-600"
-              }`}
+                }`}
             >
               <span
-                className={`size-2 rounded-full ${
-                  isDark
+                className={`size-2 rounded-full ${isDark
                     ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse"
                     : "bg-emerald-500"
-                }`}
+                  }`}
               />
               <span>100% IN-MEMORY AUDIT</span>
             </div>
@@ -342,11 +280,10 @@ export default function Home() {
             {/* Global Currency Selector Dropdown */}
             {isMounted && (
               <div
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all ${
-                  isDark
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all ${isDark
                     ? "bg-zinc-900 border-zinc-800 text-zinc-200 hover:border-zinc-700"
                     : "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200/70"
-                }`}
+                  }`}
               >
                 <Globe
                   size={14}
@@ -380,11 +317,10 @@ export default function Home() {
                 id="theme-toggle-btn"
                 onClick={toggleTheme}
                 aria-label="Toggle Light/Dark Theme"
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 cursor-pointer ${
-                  isDark
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 cursor-pointer ${isDark
                     ? "bg-zinc-900 hover:bg-zinc-800 text-amber-300 border-zinc-800 shadow-[0_0_12px_rgba(251,191,36,0.15)]"
                     : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
-                }`}
+                  }`}
               >
                 {isDark ? (
                   <>
@@ -405,11 +341,10 @@ export default function Home() {
               href="https://github.com/ritik6386/true-cost-portal"
               target="_blank"
               rel="noreferrer"
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 ${
-                isDark
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 ${isDark
                   ? "text-zinc-300 bg-zinc-900/90 hover:bg-zinc-800 hover:text-white border-zinc-800/90"
                   : "text-slate-700 bg-white hover:bg-slate-100 border-slate-200 shadow-sm"
-              }`}
+                }`}
             >
               <Code2
                 size={13}
@@ -431,11 +366,10 @@ export default function Home() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium mb-6 border transition-all ${
-              isDark
+            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium mb-6 border transition-all ${isDark
                 ? "bg-zinc-900/90 text-purple-300 border-purple-500/30 font-mono shadow-[0_0_20px_rgba(168,85,247,0.15)]"
                 : "bg-blue-50 text-blue-700 border-blue-200/80 shadow-sm"
-            }`}
+              }`}
           >
             <Sparkles
               size={13}
@@ -500,15 +434,14 @@ export default function Home() {
               const dropped = e.dataTransfer.files[0];
               if (dropped) handleFile(dropped);
             }}
-            className={`group relative rounded-3xl border-2 border-dashed p-10 sm:p-14 text-center transition-all duration-300 overflow-hidden cursor-pointer ${
-              isDark
+            className={`group relative rounded-3xl border-2 border-dashed p-10 sm:p-14 text-center transition-all duration-300 overflow-hidden cursor-pointer ${isDark
                 ? isDragging
                   ? "border-cyan-400 bg-cyan-950/20 shadow-[0_0_60px_rgba(6,182,212,0.35),inset_0_0_30px_rgba(168,85,247,0.15)] scale-[1.01]"
                   : "border-zinc-800/90 bg-zinc-900/40 hover:border-cyan-400/80 hover:bg-zinc-900/60 hover:shadow-[0_0_35px_rgba(6,182,212,0.2),inset_0_0_20px_rgba(168,85,247,0.08)] backdrop-blur-xl"
                 : isDragging
-                ? "border-blue-600 bg-blue-50/60 shadow-blue-500/10 shadow-lg scale-[1.01]"
-                : "border-slate-300 bg-white hover:border-blue-500 hover:shadow-lg shadow-sm"
-            }`}
+                  ? "border-blue-600 bg-blue-50/60 shadow-blue-500/10 shadow-lg scale-[1.01]"
+                  : "border-slate-300 bg-white hover:border-blue-500 hover:shadow-lg shadow-sm"
+              }`}
             onClick={() => document.getElementById("file-upload")?.click()}
           >
             {/* Subtle High-Tech Corner Markers in Dark Mode */}
@@ -535,15 +468,14 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center space-y-5">
               {/* Glowing Icon Container */}
               <div
-                className={`size-16 rounded-2xl flex items-center justify-center transition-all duration-300 ${
-                  isDark
+                className={`size-16 rounded-2xl flex items-center justify-center transition-all duration-300 ${isDark
                     ? isDragging
                       ? "bg-gradient-to-br from-purple-600 to-cyan-500 text-white scale-110 shadow-[0_0_30px_rgba(6,182,212,0.5)] border-transparent"
                       : "bg-zinc-950/80 border border-purple-500/30 text-cyan-400 shadow-[0_0_20px_rgba(168,85,247,0.2)] group-hover:border-cyan-400/60 group-hover:shadow-[0_0_30px_rgba(6,182,212,0.35)] group-hover:scale-105"
                     : isDragging
-                    ? "bg-blue-600 text-white scale-110 shadow-lg shadow-blue-500/30"
-                    : "bg-blue-50 text-blue-600 group-hover:bg-blue-100/80 group-hover:scale-105 shadow-sm"
-                }`}
+                      ? "bg-blue-600 text-white scale-110 shadow-lg shadow-blue-500/30"
+                      : "bg-blue-50 text-blue-600 group-hover:bg-blue-100/80 group-hover:scale-105 shadow-sm"
+                  }`}
               >
                 <UploadCloud size={30} strokeWidth={1.8} />
               </div>
@@ -561,11 +493,10 @@ export default function Home() {
               {/* Active Selected File Indicator */}
               {fileName && !loading && (
                 <div
-                  className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-mono border ${
-                    isDark
+                  className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-mono border ${isDark
                       ? "bg-zinc-900 border-purple-500/40 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
                       : "bg-slate-100 border-slate-200 text-slate-800"
-                  }`}
+                    }`}
                 >
                   <FileText
                     size={14}
@@ -583,11 +514,10 @@ export default function Home() {
                 {/* Primary Button: Select Document */}
                 <button
                   id="select-document-btn"
-                  className={`px-7 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 active:scale-95 disabled:opacity-50 ${
-                    isDark
+                  className={`px-7 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer flex items-center gap-2 active:scale-95 disabled:opacity-50 ${isDark
                       ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-400 text-white shadow-[0_0_25px_rgba(168,85,247,0.35)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]"
                       : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-600/20 hover:shadow-md"
-                  }`}
+                    }`}
                   onClick={() =>
                     document.getElementById("file-upload")?.click()
                   }
@@ -601,11 +531,10 @@ export default function Home() {
                 {!analysis && !loading && (
                   <button
                     id="sample-demo-btn"
-                    className={`px-5 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center gap-2 active:scale-95 ${
-                      isDark
+                    className={`px-5 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center gap-2 active:scale-95 ${isDark
                         ? "border border-zinc-800 hover:border-zinc-700 bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-white"
                         : "border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 shadow-sm"
-                    }`}
+                      }`}
                     onClick={handleSample}
                   >
                     <span>Try Sample Agreement</span>
@@ -636,16 +565,14 @@ export default function Home() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className={`w-full max-w-2xl mb-12 p-6 rounded-2xl flex items-center justify-center gap-4 text-center border backdrop-blur-md shadow-sm ${
-                isDark
+              className={`w-full max-w-2xl mb-12 p-6 rounded-2xl flex items-center justify-center gap-4 text-center border backdrop-blur-md shadow-sm ${isDark
                   ? "bg-zinc-900/80 border-purple-500/30 text-white shadow-[0_0_30px_rgba(168,85,247,0.15)]"
                   : "bg-white border-blue-100 text-slate-900"
-              }`}
+                }`}
             >
               <div
-                className={`size-6 border-2 border-t-transparent rounded-full animate-spin ${
-                  isDark ? "border-cyan-400" : "border-blue-600"
-                }`}
+                className={`size-6 border-2 border-t-transparent rounded-full animate-spin ${isDark ? "border-cyan-400" : "border-blue-600"
+                  }`}
               />
               <div className="text-left">
                 <p className="font-semibold text-sm">
@@ -704,22 +631,20 @@ export default function Home() {
                 <div className="flex items-center gap-3">
                   {/* Inline Currency Badge in Report */}
                   <span
-                    className={`text-xs font-mono px-2.5 py-1 rounded-lg border ${
-                      isDark
+                    className={`text-xs font-mono px-2.5 py-1 rounded-lg border ${isDark
                         ? "bg-zinc-900 border-zinc-800 text-cyan-300"
                         : "bg-blue-50 border-blue-200 text-blue-700"
-                    }`}
+                      }`}
                   >
                     Currency: {selectedCurrency}
                   </span>
 
                   <button
                     onClick={handleReset}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer border ${
-                      isDark
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer border ${isDark
                         ? "text-zinc-400 hover:text-white bg-zinc-900 border-zinc-800 hover:border-zinc-700"
                         : "text-slate-600 hover:text-slate-900 bg-white border-slate-200 hover:bg-slate-50 shadow-sm"
-                    }`}
+                      }`}
                   >
                     <RotateCcw size={13} />
                     <span>Audit Another</span>
@@ -731,11 +656,10 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Gotchas Card */}
                 <div
-                  className={`rounded-2xl p-6 border flex flex-col justify-between transition-all ${
-                    isDark
+                  className={`rounded-2xl p-6 border flex flex-col justify-between transition-all ${isDark
                       ? "bg-zinc-900/70 border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.1)] backdrop-blur-md"
                       : "bg-white border-red-200/80 shadow-sm"
-                  }`}
+                    }`}
                 >
                   <div>
                     <div className="flex items-center gap-2 mb-2">
@@ -744,9 +668,8 @@ export default function Home() {
                         className={isDark ? "text-purple-400" : "text-red-600"}
                       />
                       <h3
-                        className={`font-bold text-base ${
-                          isDark ? "text-white" : "text-red-800"
-                        }`}
+                        className={`font-bold text-base ${isDark ? "text-white" : "text-red-800"
+                          }`}
                       >
                         Hidden Traps & Predatory Terms
                       </h3>
@@ -762,11 +685,10 @@ export default function Home() {
                           className="flex items-start gap-3 text-sm text-slate-700 dark:text-zinc-300 leading-snug"
                         >
                           <span
-                            className={`size-5 rounded-md font-mono text-xs flex items-center justify-center shrink-0 mt-0.5 ${
-                              isDark
+                            className={`size-5 rounded-md font-mono text-xs flex items-center justify-center shrink-0 mt-0.5 ${isDark
                                 ? "bg-purple-500/20 text-purple-300 border border-purple-500/40"
                                 : "bg-red-100 text-red-700 font-bold"
-                            }`}
+                              }`}
                           >
                             0{index + 1}
                           </span>
@@ -779,11 +701,10 @@ export default function Home() {
 
                 {/* The Final Bill Card */}
                 <div
-                  className={`rounded-2xl p-6 border flex flex-col justify-between transition-all ${
-                    isDark
+                  className={`rounded-2xl p-6 border flex flex-col justify-between transition-all ${isDark
                       ? "bg-zinc-900/90 border-cyan-500/30 shadow-[0_0_35px_rgba(6,182,212,0.12)] backdrop-blur-md"
                       : "bg-slate-900 text-white border-slate-800 shadow-md"
-                  }`}
+                    }`}
                 >
                   <div>
                     <div className="flex items-center justify-between pb-3 border-b border-slate-800">
@@ -791,11 +712,10 @@ export default function Home() {
                         The Final Bill
                       </span>
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold border ${
-                          isDark
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold border ${isDark
                             ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-[0_0_10px_rgba(6,182,212,0.2)]"
                             : "bg-blue-500/20 text-blue-400 border-blue-500/30"
-                        }`}
+                          }`}
                       >
                         {analysis.apr}% APR
                       </span>
@@ -806,11 +726,10 @@ export default function Home() {
                         Total Amount You Pay Back
                       </span>
                       <p
-                        className={`text-4xl font-extrabold mt-1 font-mono tracking-tight ${
-                          isDark
+                        className={`text-4xl font-extrabold mt-1 font-mono tracking-tight ${isDark
                             ? "text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-cyan-400"
                             : "text-white"
-                        }`}
+                          }`}
                       >
                         {formatCurrency(analysis.totalPayback, selectedCurrency)}
                       </p>
@@ -847,11 +766,10 @@ export default function Home() {
               {/* Timeline Amortization Chart */}
               {analysis.schedule && analysis.schedule.length > 0 && (
                 <div
-                  className={`rounded-2xl p-6 border transition-all ${
-                    isDark
+                  className={`rounded-2xl p-6 border transition-all ${isDark
                       ? "bg-zinc-900/60 border-zinc-800/80 backdrop-blur-md"
                       : "bg-white border-slate-200/80 shadow-sm"
-                  }`}
+                    }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-200 dark:border-zinc-800 mb-6">
                     <div>
@@ -866,11 +784,10 @@ export default function Home() {
                     <div className="flex items-center gap-5 text-xs font-mono">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`size-2.5 rounded-full ${
-                            isDark
+                          className={`size-2.5 rounded-full ${isDark
                               ? "bg-cyan-400 shadow-[0_0_6px_#22d3ee]"
                               : "bg-blue-600"
-                          }`}
+                            }`}
                         />
                         <span className="text-slate-600 dark:text-zinc-300">
                           Principal Repaid
@@ -878,11 +795,10 @@ export default function Home() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`size-2.5 rounded-full ${
-                            isDark
+                          className={`size-2.5 rounded-full ${isDark
                               ? "bg-purple-500 shadow-[0_0_6px_#a855f7]"
                               : "bg-red-500"
-                          }`}
+                            }`}
                         />
                         <span className="text-slate-600 dark:text-zinc-300">
                           Interest Fees
@@ -1000,17 +916,15 @@ export default function Home() {
 
               {/* Legal & Financial Advisory Warning Disclaimer */}
               <div
-                className={`p-4 rounded-2xl border text-xs flex items-start gap-3 transition-colors ${
-                  isDark
+                className={`p-4 rounded-2xl border text-xs flex items-start gap-3 transition-colors ${isDark
                     ? "bg-zinc-900/50 border-zinc-800/80 text-zinc-400"
                     : "bg-amber-50/80 border-amber-200/90 text-amber-950"
-                }`}
+                  }`}
               >
                 <AlertTriangle
                   size={16}
-                  className={`shrink-0 mt-0.5 ${
-                    isDark ? "text-amber-400" : "text-amber-600"
-                  }`}
+                  className={`shrink-0 mt-0.5 ${isDark ? "text-amber-400" : "text-amber-600"
+                    }`}
                 />
                 <div>
                   <span className="font-semibold block mb-0.5">
@@ -1032,19 +946,17 @@ export default function Home() {
         >
           {/* Feature 1 */}
           <div
-            className={`rounded-2xl p-5 border transition-all duration-300 group ${
-              isDark
+            className={`rounded-2xl p-5 border transition-all duration-300 group ${isDark
                 ? "bg-zinc-900/40 border-zinc-800/80 hover:border-purple-500/40 hover:bg-zinc-900/60 backdrop-blur-sm"
                 : "bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-md shadow-sm"
-            }`}
+              }`}
           >
             <div className="flex items-center gap-2.5 mb-2.5">
               <div
-                className={`size-7 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 ${
-                  isDark
+                className={`size-7 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 ${isDark
                     ? "bg-cyan-950/70 border border-cyan-800/60 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.25)]"
                     : "bg-emerald-50 text-emerald-600"
-                }`}
+                  }`}
               >
                 <ShieldCheck size={16} />
               </div>
@@ -1057,9 +969,8 @@ export default function Home() {
               persistence, and no third-party data tracking.
             </p>
             <div
-              className={`mt-3 text-[10px] font-mono ${
-                isDark ? "text-cyan-400/80" : "text-emerald-600 font-semibold"
-              }`}
+              className={`mt-3 text-[10px] font-mono ${isDark ? "text-cyan-400/80" : "text-emerald-600 font-semibold"
+                }`}
             >
               01 // ZERO_RETENTION
             </div>
@@ -1067,19 +978,17 @@ export default function Home() {
 
           {/* Feature 2 */}
           <div
-            className={`rounded-2xl p-5 border transition-all duration-300 group ${
-              isDark
+            className={`rounded-2xl p-5 border transition-all duration-300 group ${isDark
                 ? "bg-zinc-900/40 border-zinc-800/80 hover:border-purple-500/40 hover:bg-zinc-900/60 backdrop-blur-sm"
                 : "bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-md shadow-sm"
-            }`}
+              }`}
           >
             <div className="flex items-center gap-2.5 mb-2.5">
               <div
-                className={`size-7 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 ${
-                  isDark
+                className={`size-7 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 ${isDark
                     ? "bg-purple-950/70 border border-purple-800/60 text-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.25)]"
                     : "bg-blue-50 text-blue-600"
-                }`}
+                  }`}
               >
                 <Calculator size={16} />
               </div>
@@ -1092,9 +1001,8 @@ export default function Home() {
               verifies true APR compounding and hidden balloon fees.
             </p>
             <div
-              className={`mt-3 text-[10px] font-mono ${
-                isDark ? "text-purple-400/80" : "text-blue-600 font-semibold"
-              }`}
+              className={`mt-3 text-[10px] font-mono ${isDark ? "text-purple-400/80" : "text-blue-600 font-semibold"
+                }`}
             >
               02 // DETERMINISTIC_MATH
             </div>
@@ -1102,19 +1010,17 @@ export default function Home() {
 
           {/* Feature 3 */}
           <div
-            className={`rounded-2xl p-5 border transition-all duration-300 group ${
-              isDark
+            className={`rounded-2xl p-5 border transition-all duration-300 group ${isDark
                 ? "bg-zinc-900/40 border-zinc-800/80 hover:border-cyan-500/40 hover:bg-zinc-900/60 backdrop-blur-sm"
                 : "bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-md shadow-sm"
-            }`}
+              }`}
           >
             <div className="flex items-center gap-2.5 mb-2.5">
               <div
-                className={`size-7 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 ${
-                  isDark
+                className={`size-7 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 ${isDark
                     ? "bg-cyan-950/70 border border-cyan-800/60 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.25)]"
                     : "bg-indigo-50 text-indigo-600"
-                }`}
+                  }`}
               >
                 <Lock size={16} />
               </div>
@@ -1127,9 +1033,8 @@ export default function Home() {
               amortization algorithms or self-host via GitHub.
             </p>
             <div
-              className={`mt-3 text-[10px] font-mono ${
-                isDark ? "text-cyan-400/80" : "text-indigo-600 font-semibold"
-              }`}
+              className={`mt-3 text-[10px] font-mono ${isDark ? "text-cyan-400/80" : "text-indigo-600 font-semibold"
+                }`}
             >
               03 // AUDIT_READY
             </div>

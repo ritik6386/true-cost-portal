@@ -60,3 +60,9 @@ async def root():
         "documentation": "/docs",
         "status": "online"
     }
+@app.get("/health", status_code=status.HTTP_200_OK, tags=["Health"])
+def health_check():
+    """
+    Zero-overhead health check route for Render keep-alive.
+    """
+    return {"status": "ok"}

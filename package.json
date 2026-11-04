@@ -7,6 +7,8 @@
     "dev:backend": "python -m uvicorn app.main:app --reload --port 8000 --app-dir backend",
     "dev:all": "concurrently -n \"next,fastapi\" -c \"cyan,magenta\" \"next dev\" \"python -m uvicorn app.main:app --reload --port 8000 --app-dir backend\"",
     "test:backend": "python -m pytest backend/tests -v",
+    "test:frontend": "node --experimental-strip-types --test lib/__tests__/*.test.ts",
+    "test": "npm run test:backend && npm run test:frontend",
     "build": "next build",
     "start": "next start",
     "lint": "eslint ."

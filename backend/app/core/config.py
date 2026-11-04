@@ -16,11 +16,12 @@ class Settings(BaseSettings):
         "http://127.0.0.1:8000",
         "*"
     ]
-    # Upgraded model execution pipeline targeting GA gemini-3.8-flash with fallback
+    # Upgraded model execution pipeline prioritizing active, responsive GA models
     GEMINI_MODELS: List[str] = [
+        "gemini-3.5-flash",
+        "gemini-3.5-flash-lite",
         "gemini-3.8-flash",
         "gemini-3.7-flash",
-        "gemini-3.5-flash",
     ]
 
     model_config = SettingsConfigDict(
