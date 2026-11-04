@@ -48,3 +48,8 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
+
+# Reports
+*_REPORT.*
+FINAL_PROJECT_REPORT.txt
+backend_code.txt
