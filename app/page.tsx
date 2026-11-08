@@ -518,90 +518,85 @@ export default function Home() {
       <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex-1 flex flex-col justify-center min-h-0">
         {loading ? (
           /* ==========================================================
-             VIEW C: Full-Window Forensic Decompilation Loading Screen
-             Replaces the dropzone immediately on upload with live typewriter log
+             VIEW C: Modern Circular Orbit Loading Screen
+             Minimalist geometric radial spinner with live typewriter status
              ========================================================== */
           <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.25 }}
-            className="w-full max-w-3xl mx-auto p-6 sm:p-8 rounded-3xl border shadow-2xl backdrop-blur-xl flex flex-col justify-between my-auto transition-all"
+            transition={{ duration: 0.3 }}
+            className="w-full max-w-lg mx-auto p-8 sm:p-10 rounded-3xl border shadow-2xl backdrop-blur-xl flex flex-col items-center justify-center text-center my-auto transition-all"
             style={{
               backgroundColor: isDark ? "rgba(9, 9, 11, 0.85)" : "rgba(255, 255, 255, 0.95)",
               borderColor: isDark ? "rgba(168, 85, 247, 0.3)" : "rgba(219, 234, 254, 1)",
-              boxShadow: isDark ? "0 0 50px rgba(168,85,247,0.15)" : "0 20px 40px rgba(37,99,235,0.08)",
+              boxShadow: isDark ? "0 0 50px rgba(168,85,247,0.15)" : "0 20px 45px rgba(37,99,235,0.08)",
             }}
           >
-            {/* Top Status Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`size-9 rounded-xl flex items-center justify-center ${
-                    isDark
-                      ? "bg-purple-500/20 text-cyan-400 border border-purple-500/40"
-                      : "bg-blue-50 text-blue-600 border border-blue-200"
-                  }`}
-                >
-                  <FileText size={18} />
-                </div>
-                <div>
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                    Analyzing Loan Document
-                  </h3>
-                  <p className="text-[11px] font-mono text-slate-500 dark:text-zinc-400">
-                    {fileName || "Loan Agreement.pdf"}
-                  </p>
-                </div>
-              </div>
-
+            {/* Concentric Neon Radial Orbit Spinner */}
+            <div className="relative size-28 sm:size-32 flex items-center justify-center mb-6">
+              {/* Outer Glow Halo */}
               <div
-                className={`size-5 border-2 border-t-transparent rounded-full animate-spin shrink-0 ${
-                  isDark ? "border-cyan-400" : "border-blue-600"
+                className={`absolute inset-0 rounded-full blur-xl opacity-40 transition-all ${
+                  isDark ? "bg-cyan-500" : "bg-blue-400"
                 }`}
               />
+
+              {/* Outer Counter-Clockwise Orbit Ring */}
+              <div
+                className={`absolute inset-0 rounded-full border-2 border-dashed animate-spin ${
+                  isDark
+                    ? "border-purple-500/40 border-t-purple-400"
+                    : "border-blue-200 border-t-blue-500"
+                }`}
+                style={{ animationDuration: "6s", animationDirection: "reverse" }}
+              />
+
+              {/* Inner High-Speed Ring */}
+              <div
+                className={`absolute inset-2 rounded-full border-2 border-transparent animate-spin ${
+                  isDark
+                    ? "border-t-cyan-400 border-r-cyan-400/30"
+                    : "border-t-blue-600 border-r-blue-400/40"
+                }`}
+                style={{ animationDuration: "1.2s" }}
+              />
+
+              {/* Center Core Badge */}
+              <div
+                className={`size-14 sm:size-16 rounded-2xl flex items-center justify-center shadow-lg transition-transform ${
+                  isDark
+                    ? "bg-zinc-950 border border-purple-500/40 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.35)]"
+                    : "bg-blue-50 text-blue-600 border border-blue-200 shadow-blue-500/10"
+                }`}
+              >
+                <Sparkles size={24} className="animate-pulse" />
+              </div>
             </div>
 
-            {/* Typewriter Progress Log */}
-            <div className="my-5 space-y-3.5">
-              <div
-                className={`p-4 rounded-2xl border ${
-                  isDark
-                    ? "bg-zinc-950/80 border-zinc-800 text-zinc-200"
-                    : "bg-slate-50 border-slate-200/80 text-slate-800"
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-2 text-xs font-mono font-semibold text-blue-600 dark:text-cyan-400">
-                  <div className="size-2 rounded-full bg-blue-600 dark:bg-cyan-400 animate-pulse" />
-                  <span>STEP 1 // DECOMPILING REPAYMENT TERMS</span>
-                </div>
-                <p className="text-xs sm:text-sm leading-relaxed font-sans min-h-[36px]">
-                  <TypewriterText
-                    text="Scanning loan agreement & decompiling repayment schedule in volatile RAM..."
-                    speed={14}
-                    delay={100}
-                  />
-                </p>
-              </div>
+            {/* Document Target & Live Typewriter Status */}
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight mb-1">
+              Auditing Contract Parameters
+            </h3>
 
-              <div
-                className={`p-4 rounded-2xl border ${
-                  isDark
-                    ? "bg-zinc-950/80 border-purple-500/25 text-zinc-200"
-                    : "bg-purple-50/50 border-purple-200/70 text-slate-800"
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-2 text-xs font-mono font-semibold text-purple-600 dark:text-purple-400">
-                  <div className="size-2 rounded-full bg-purple-600 dark:bg-purple-400 animate-pulse" />
-                  <span>STEP 2 // AUDITING PREDATORY FINE PRINT</span>
-                </div>
-                <p className="text-xs sm:text-sm leading-relaxed font-sans min-h-[36px]">
-                  <TypewriterText
-                    text="Analyzing fine print clauses for prepayment penalties, surge default rates, and mandatory binding arbitration..."
-                    speed={12}
-                    delay={600}
-                  />
-                </p>
-              </div>
+            {fileName && (
+              <p className="text-[11px] font-mono text-slate-500 dark:text-zinc-400 mb-4 px-3 py-0.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 inline-block truncate max-w-[280px]">
+                {fileName}
+              </p>
+            )}
+
+            {/* Single Clean Typewriter Stream Status */}
+            <div
+              className={`w-full p-3.5 rounded-2xl border text-xs sm:text-sm font-medium leading-relaxed min-h-[52px] flex items-center justify-center ${
+                isDark
+                  ? "bg-zinc-950/70 border-zinc-800 text-zinc-300"
+                  : "bg-slate-50 border-slate-200/80 text-slate-700"
+              }`}
+            >
+              <TypewriterText
+                text="Scanning loan agreement & decompiling repayment schedule in volatile RAM..."
+                speed={14}
+                delay={50}
+              />
             </div>
           </motion.div>
         ) : !analysis ? (
