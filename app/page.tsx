@@ -533,7 +533,7 @@ export default function Home() {
             }}
           >
             {/* Top Status Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
               <div className="flex items-center gap-3">
                 <div
                   className={`size-9 rounded-xl flex items-center justify-center ${
@@ -546,24 +546,23 @@ export default function Home() {
                 </div>
                 <div>
                   <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                    Volatile Memory Decompilation
+                    Analyzing Loan Document
                   </h3>
                   <p className="text-[11px] font-mono text-slate-500 dark:text-zinc-400">
-                    Target: {fileName || "Uploaded Contract.pdf"}
+                    {fileName || "Loan Agreement.pdf"}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-cyan-400 animate-ping" />
-                <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-600 dark:text-cyan-400 font-bold">
-                  Enclave Active
-                </span>
-              </div>
+              <div
+                className={`size-5 border-2 border-t-transparent rounded-full animate-spin shrink-0 ${
+                  isDark ? "border-cyan-400" : "border-blue-600"
+                }`}
+              />
             </div>
 
-            {/* Typewriter Forensic Progress Log */}
-            <div className="my-6 space-y-4">
+            {/* Typewriter Progress Log */}
+            <div className="my-5 space-y-3.5">
               <div
                 className={`p-4 rounded-2xl border ${
                   isDark
@@ -573,9 +572,9 @@ export default function Home() {
               >
                 <div className="flex items-center gap-2 mb-2 text-xs font-mono font-semibold text-blue-600 dark:text-cyan-400">
                   <div className="size-2 rounded-full bg-blue-600 dark:bg-cyan-400 animate-pulse" />
-                  <span>PHASE 01 // LOAN_DECOMPILATION</span>
+                  <span>STEP 1 // DECOMPILING REPAYMENT TERMS</span>
                 </div>
-                <p className="text-xs sm:text-sm leading-relaxed font-sans min-h-[38px]">
+                <p className="text-xs sm:text-sm leading-relaxed font-sans min-h-[36px]">
                   <TypewriterText
                     text="Scanning loan agreement & decompiling repayment schedule in volatile RAM..."
                     speed={14}
@@ -593,33 +592,16 @@ export default function Home() {
               >
                 <div className="flex items-center gap-2 mb-2 text-xs font-mono font-semibold text-purple-600 dark:text-purple-400">
                   <div className="size-2 rounded-full bg-purple-600 dark:bg-purple-400 animate-pulse" />
-                  <span>PHASE 02 // PREDATORY_CLAUSE_AUDIT</span>
+                  <span>STEP 2 // AUDITING PREDATORY FINE PRINT</span>
                 </div>
-                <p className="text-xs sm:text-sm leading-relaxed font-sans min-h-[38px]">
+                <p className="text-xs sm:text-sm leading-relaxed font-sans min-h-[36px]">
                   <TypewriterText
                     text="Analyzing fine print clauses for prepayment penalties, surge default rates, and mandatory binding arbitration..."
                     speed={12}
-                    delay={800}
+                    delay={600}
                   />
                 </p>
               </div>
-            </div>
-
-            {/* Stream token chunk ticker (if tokens arriving) */}
-            {streamBuffer && (
-              <div className="mb-4 p-2.5 rounded-xl bg-slate-950 text-cyan-300 font-mono text-[10px] max-h-20 overflow-y-auto leading-relaxed border border-slate-800">
-                <span className="text-slate-500 block mb-1">{"// INCOMING_STREAM_CHUNK"}</span>
-                <span className="whitespace-pre-wrap break-all">{streamBuffer.slice(-160)}</span>
-              </div>
-            )}
-
-            {/* Bottom Enclave Safeguard Bar */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-800 text-[11px] font-mono text-slate-500 dark:text-zinc-500">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck size={13} className="text-emerald-500" />
-                Zero Disk Persistence Enforced
-              </span>
-              <span>COMPUTING_DETERMINISTIC_MATH...</span>
             </div>
           </motion.div>
         ) : !analysis ? (
