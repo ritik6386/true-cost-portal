@@ -371,10 +371,10 @@ export default function Home() {
           {/* Privacy Indicator, Multi-Currency Info, Theme Toggle, & GitHub */}
           <div className="flex items-center gap-2 sm:gap-3">
             <div
-              className={`hidden md:inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-mono border transition-colors ${
+              className={`hidden md:inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-mono font-semibold border transition-colors ${
                 isDark
-                  ? "bg-zinc-900/80 border-zinc-800 text-zinc-400"
-                  : "bg-slate-100 border-slate-200 text-slate-600"
+                  ? "bg-zinc-900/80 border-zinc-800 text-zinc-300"
+                  : "bg-slate-100 border-slate-200 text-slate-700"
               }`}
             >
               <span
@@ -454,7 +454,7 @@ export default function Home() {
                                 Auto-Detect
                               </span>
                             </div>
-                            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed">
+                            <p className="text-xs text-slate-700 dark:text-zinc-300 mt-1.5 leading-relaxed font-medium">
                               This portal automatically detects and standardizes contract currencies (e.g. ₹ INR, $ USD, € EUR, £ GBP, ¥ JPY) directly from your uploaded loan document.
                             </p>
                           </div>
@@ -579,17 +579,17 @@ export default function Home() {
             </h3>
 
             {fileName && (
-              <p className="text-[11px] font-mono text-slate-500 dark:text-zinc-400 mb-4 px-3 py-0.5 rounded-full border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 inline-block truncate max-w-[280px]">
+              <p className="text-xs font-mono font-semibold text-slate-700 dark:text-zinc-200 mb-4 px-3.5 py-1 rounded-full border border-slate-300 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-900 inline-block truncate max-w-[280px]">
                 {fileName}
               </p>
             )}
 
             {/* Single Clean Typewriter Stream Status */}
             <div
-              className={`w-full p-3.5 rounded-2xl border text-xs sm:text-sm font-medium leading-relaxed min-h-[52px] flex items-center justify-center ${
+              className={`w-full p-4 rounded-2xl border text-sm font-semibold leading-relaxed min-h-[56px] flex items-center justify-center ${
                 isDark
-                  ? "bg-zinc-950/70 border-zinc-800 text-zinc-300"
-                  : "bg-slate-50 border-slate-200/80 text-slate-700"
+                  ? "bg-zinc-950/80 border-zinc-700 text-zinc-100"
+                  : "bg-slate-50 border-slate-300 text-slate-900"
               }`}
             >
               <TypewriterText
@@ -640,7 +640,7 @@ export default function Home() {
                 )}
               </h1>
 
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-1.5 max-w-lg mx-auto leading-normal">
+              <p className="text-xs sm:text-sm text-slate-700 dark:text-zinc-300 mt-2 max-w-lg mx-auto leading-normal font-medium">
                 Upload any credit agreement or loan PDF to reverse-engineer predatory APR compounding and reveal hidden costs.
               </p>
             </div>
@@ -700,13 +700,13 @@ export default function Home() {
                     <p className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
                       Click or drag PDF to analyze
                     </p>
-                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
+                    <p className="text-xs text-slate-600 dark:text-zinc-300 mt-1 font-medium">
                       Evaluated 100% in volatile RAM. Never stored on disk.
                     </p>
                     {fileName && (
-                      <div className="mt-1 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono border bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300">
-                        <FileText size={11} className={isDark ? "text-cyan-400" : "text-blue-600"} />
-                        <span className="truncate max-w-[200px]">{fileName}</span>
+                      <div className="mt-1.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold border bg-slate-100 dark:bg-zinc-800 border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200">
+                        <FileText size={12} className={isDark ? "text-cyan-400" : "text-blue-600"} />
+                        <span className="truncate max-w-[220px]">{fileName}</span>
                       </div>
                     )}
                   </div>
@@ -823,7 +823,7 @@ export default function Home() {
                     In-Memory Enclave
                   </h3>
                 </div>
-                <p className="text-[11px] text-slate-600 dark:text-zinc-400 leading-snug">
+                <p className="text-xs text-slate-700 dark:text-zinc-300 leading-snug font-medium">
                   Processed in volatile RAM. No server logs, zero disk persistence.
                 </p>
               </div>
@@ -849,7 +849,7 @@ export default function Home() {
                     Deterministic Math
                   </h3>
                 </div>
-                <p className="text-[11px] text-slate-600 dark:text-zinc-400 leading-snug">
+                <p className="text-xs text-slate-700 dark:text-zinc-300 leading-snug font-medium">
                   Zero AI hallucination on numbers; exact amortization formulas verify real APR.
                 </p>
               </div>
@@ -875,7 +875,7 @@ export default function Home() {
                     Open Source & Verifiable
                   </h3>
                 </div>
-                <p className="text-[11px] text-slate-600 dark:text-zinc-400 leading-snug">
+                <p className="text-xs text-slate-700 dark:text-zinc-300 leading-snug font-medium">
                   Transparent architecture. Review parsing routines or self-host on GitHub.
                 </p>
               </div>
@@ -943,11 +943,11 @@ export default function Home() {
                 >
                   <div>
                     <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
-                      <span className="text-xs font-semibold text-slate-300">
+                      <span className="text-xs font-bold text-slate-200">
                         The Final Bill
                       </span>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-semibold border ${
+                        className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold border ${
                           isDark
                             ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
                             : "bg-blue-500/20 text-blue-400 border-blue-500/30"
@@ -958,7 +958,7 @@ export default function Home() {
                     </div>
 
                     <div className="my-3">
-                      <span className="text-[10px] uppercase tracking-wider text-slate-400 font-mono">
+                      <span className="text-[11px] uppercase tracking-wider text-slate-300 font-mono font-semibold">
                         Total Amount You Pay Back
                       </span>
                       <p
@@ -972,7 +972,7 @@ export default function Home() {
                       </p>
                     </div>
 
-                    <p className="text-[11px] text-slate-300 leading-relaxed min-h-[34px]">
+                    <p className="text-xs text-slate-200 leading-relaxed min-h-[34px] font-medium">
                       <TypewriterText
                         text={adaptSummaryCurrency(analysis.plainEnglishSummary, selectedCurrency)}
                         speed={12}
@@ -982,17 +982,17 @@ export default function Home() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-slate-800/80 text-xs font-mono">
-                    <div className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50">
-                      <span className="text-slate-400 block text-[10px]">Principal</span>
-                      <span className="font-semibold text-slate-100 text-xs sm:text-sm">
+                    <div className="p-2.5 rounded-lg bg-slate-800/80 border border-slate-700">
+                      <span className="text-slate-300 block text-[11px] font-semibold">Principal</span>
+                      <span className="font-bold text-slate-100 text-xs sm:text-sm">
                         {typeof analysis.principal === "number"
                           ? formatCurrency(analysis.principal, selectedCurrency)
                           : "N/A"}
                       </span>
                     </div>
-                    <div className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50">
-                      <span className="text-slate-400 block text-[10px]">Loan Term</span>
-                      <span className="font-semibold text-slate-100 text-xs sm:text-sm">
+                    <div className="p-2.5 rounded-lg bg-slate-800/80 border border-slate-700">
+                      <span className="text-slate-300 block text-[11px] font-semibold">Loan Term</span>
+                      <span className="font-bold text-slate-100 text-xs sm:text-sm">
                         {analysis.termMonths} Months
                       </span>
                     </div>
@@ -1026,12 +1026,12 @@ export default function Home() {
                       {(analysis.gotchas ?? []).slice(0, 3).map((gotcha, index) => (
                         <li
                           key={index}
-                          className="flex items-start gap-2 text-xs text-slate-700 dark:text-zinc-300 leading-snug"
+                          className="flex items-start gap-2 text-xs sm:text-[13px] text-slate-800 dark:text-zinc-150 leading-snug font-medium"
                         >
                           <span
                             className={`size-4 rounded-md font-mono text-[10px] flex items-center justify-center shrink-0 mt-0.5 ${
                               isDark
-                                ? "bg-purple-500/20 text-purple-300 border border-purple-500/40"
+                                ? "bg-purple-500/25 text-purple-200 border border-purple-500/50 font-bold"
                                 : "bg-red-100 text-red-700 font-bold"
                             }`}
                           >
@@ -1049,7 +1049,7 @@ export default function Home() {
                     </ul>
                   </div>
 
-                  <div className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 pt-2 border-t border-slate-100 dark:border-zinc-800 mt-2">
+                  <div className="text-[11px] font-mono font-semibold text-slate-500 dark:text-zinc-400 pt-2 border-t border-slate-100 dark:border-zinc-800 mt-2">
                     FORENSIC_FLAG: 3_HIGH_RISK_CONDITIONS
                   </div>
                 </div>
@@ -1068,19 +1068,19 @@ export default function Home() {
                     <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                       Where Your Money Goes Over Time
                     </h3>
-                    <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+                    <p className="text-xs text-slate-600 dark:text-zinc-350 font-medium">
                       Principal Repaid vs. Interest Accrual ({selectedCurrency})
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-4 text-[11px] font-mono">
+                  <div className="flex items-center gap-4 text-xs font-mono font-semibold">
                     <div className="flex items-center gap-1.5">
                       <span
                         className={`size-2 rounded-full ${
                           isDark ? "bg-cyan-400 shadow-[0_0_6px_#22d3ee]" : "bg-blue-600"
                         }`}
                       />
-                      <span className="text-slate-600 dark:text-zinc-300">Principal</span>
+                      <span className="text-slate-700 dark:text-zinc-200">Principal</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span
@@ -1088,7 +1088,7 @@ export default function Home() {
                           isDark ? "bg-purple-500 shadow-[0_0_6px_#a855f7]" : "bg-red-500"
                         }`}
                       />
-                      <span className="text-slate-600 dark:text-zinc-300">Interest</span>
+                      <span className="text-slate-700 dark:text-zinc-200">Interest</span>
                     </div>
                   </div>
                 </div>
@@ -1186,9 +1186,9 @@ export default function Home() {
                 </div>
 
                 {/* Compact Disclaimer Bar at Bottom of Card */}
-                <div className="text-[10px] text-slate-400 dark:text-zinc-500 pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
+                <div className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium pt-2 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                   <span>Informational algorithmic estimate only. Not certified financial advice.</span>
-                  <span className="font-mono">STATUS: 100% DETERMINISTIC</span>
+                  <span className="font-mono font-bold">STATUS: 100% DETERMINISTIC</span>
                 </div>
               </div>
             </div>
@@ -1197,15 +1197,15 @@ export default function Home() {
       </main>
 
       {/* Geometric Compact Footer (Height: 36px) */}
-      <footer className="w-full shrink-0 border-t border-slate-200/80 dark:border-zinc-850 bg-white/80 dark:bg-zinc-950/80 py-2 text-xs text-slate-500 dark:text-zinc-500 backdrop-blur-md transition-colors duration-300">
+      <footer className="w-full shrink-0 border-t border-slate-200/80 dark:border-zinc-850 bg-white/80 dark:bg-zinc-950/80 py-2 text-xs text-slate-600 dark:text-zinc-400 font-medium backdrop-blur-md transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-5 flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="size-1.5 rounded-full bg-emerald-500 shadow-sm" />
-            <span className="font-mono text-slate-700 dark:text-zinc-400 font-medium text-[11px]">
+            <span className="font-mono text-slate-800 dark:text-zinc-200 font-semibold text-xs">
               True Cost Portal v1.2
             </span>
           </div>
-          <div className="flex items-center gap-4 text-slate-500 dark:text-zinc-500 font-mono text-[10px]">
+          <div className="flex items-center gap-4 text-slate-600 dark:text-zinc-400 font-mono text-[11px] font-medium">
             <span>100% In-Memory</span>
             <span>•</span>
             <span>Zero Third-Party Storage</span>
@@ -1214,7 +1214,7 @@ export default function Home() {
               href="https://github.com/ritik6386/true-cost-portal"
               target="_blank"
               rel="noreferrer"
-              className="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors underline-offset-2 hover:underline"
+              className="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors underline-offset-2 hover:underline font-semibold"
             >
               ritik.2vedi
             </a>
