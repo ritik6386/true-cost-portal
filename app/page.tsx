@@ -196,12 +196,30 @@ export default function Home() {
       return;
     }
 
+    // IMMEDIATELY switch view to the audit report cards
+    // The skeleton cards and typewriter animation will take focus instantly
     setLoading(true);
-    setAnalysis(null);
     setError(null);
-    setStreamBuffer("");
-    setStreamStatus("Initializing document streaming enclave...");
     setFileName(file.name);
+    setStreamBuffer("");
+    setStreamStatus("Connecting to document streaming enclave...");
+
+    // Seed immediate placeholder state so the dashboard mounts without any delay
+    setAnalysis({
+      principal: 0,
+      apr: 0,
+      termMonths: 0,
+      currency: "INR",
+      currencySymbol: "₹",
+      gotchas: [
+        "Analyzing fine print for prepayment and foreclosure penalties...",
+        "Evaluating surge interest rate clauses on late payments...",
+        "Auditing dispute resolution & binding arbitration mandates...",
+      ],
+      plainEnglishSummary: "Scanning loan agreement and decompiling repayment schedule in volatile RAM...",
+      totalPayback: 0,
+      schedule: [],
+    });
 
     try {
       const formData = new FormData();
@@ -264,7 +282,6 @@ export default function Home() {
             if (e instanceof Error && e.message.includes("Streaming analysis failed")) {
               throw e;
             }
-            // Skip transient malformed SSE lines
           }
         }
       }
@@ -287,6 +304,8 @@ export default function Home() {
           ? err.message
           : "Analysis failed. Please check your PDF and try again.";
       setError(message);
+      // Reset back to uploader view if an error occurred
+      setAnalysis(null);
     } finally {
       setLoading(false);
     }
@@ -299,19 +318,10 @@ export default function Home() {
     setStreamBuffer("");
     setStreamStatus("Simulating live contract extraction...");
 
-    // Smooth typewriter simulation for sample agreement
-    const sampleText = JSON.stringify(SAMPLE_CONTRACT, null, 2);
-    let index = 0;
-    const interval = setInterval(() => {
-      index += 30;
-      setStreamBuffer(sampleText.slice(0, index));
-      if (index >= sampleText.length) {
-        clearInterval(interval);
-        setAnalysis(SAMPLE_CONTRACT);
-        setSelectedCurrency("INR");
-        setLoading(false);
-      }
-    }, 40);
+    // Immediately switch view to results
+    setAnalysis(SAMPLE_CONTRACT);
+    setSelectedCurrency("INR");
+    setLoading(false);
   };
 
   const handleReset = () => {
@@ -814,12 +824,20 @@ export default function Home() {
             {/* Top Toolbar Strip (Height: 38px) */}
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
-                <CheckCircle2
-                  size={16}
-                  className={isDark ? "text-cyan-400" : "text-blue-600"}
-                />
+                {loading ? (
+                  <div
+                    className={`size-3.5 border-2 border-t-transparent rounded-full animate-spin shrink-0 ${
+                      isDark ? "border-cyan-400" : "border-blue-600"
+                    }`}
+                  />
+                ) : (
+                  <CheckCircle2
+                    size={16}
+                    className={isDark ? "text-cyan-400" : "text-blue-600"}
+                  />
+                )}
                 <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
-                  Contract Audit Overview
+                  {loading ? "Streaming Live Contract Audit..." : "Contract Audit Overview"}
                 </h2>
                 <span
                   className={`text-[10px] font-mono px-2 py-0.5 rounded-md border ${
@@ -828,7 +846,7 @@ export default function Home() {
                       : "bg-blue-50 border-blue-200 text-blue-700"
                   }`}
                 >
-                  Detected: {selectedCurrency}
+                  {loading ? streamStatus : `Detected: ${selectedCurrency}`}
                 </span>
               </div>
 
