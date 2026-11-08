@@ -208,84 +208,134 @@ export default function Home() {
       const formData = new FormData();
       formData.append("file", file);
 
-      // Connect to the Server-Sent Events (SSE) streaming endpoint
-      const response = await fetch("/api/analyze/stream", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.detail || "Failed to analyze document.");
-      }
-
-      if (!response.body) {
-        throw new Error("Streaming readable body not supported in this browser.");
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let pendingChunk = "";
+      // 1. First attempt Server-Sent Events (SSE) streaming endpoint
       let completedResult: AnalysisResult | null = null;
+      let streamFailed = false;
 
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
+      try {
+        const response = await fetch("/api/analyze/stream", {
+          method: "POST",
+          body: formData,
+        });
 
-        pendingChunk += decoder.decode(value, { stream: true });
-        const lines = pendingChunk.split("\n\n");
-        pendingChunk = lines.pop() || "";
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith("data:")) continue;
-
-          const jsonPayload = trimmed.replace(/^data:\s*/, "");
+        if (!response.ok) {
+          let errDetail = `HTTP ${response.status} (${response.statusText || "Server Error"})`;
           try {
-            const event = JSON.parse(jsonPayload);
-            if (event.type === "status") {
-              setStreamStatus(event.message);
-            } else if (event.type === "token") {
-              setStreamBuffer((prev) => prev + event.chunk);
-            } else if (event.type === "complete") {
-              completedResult = event.data as AnalysisResult;
-              setAnalysis(completedResult);
-              if (completedResult.currency) {
-                const found = SUPPORTED_CURRENCIES.find(
-                  (c) => c.code.toUpperCase() === String(completedResult?.currency).toUpperCase()
-                );
-                if (found) {
-                  handleCurrencyChange(found.code);
+            const errorData = await response.json();
+            errDetail = errorData.error || errorData.detail || errDetail;
+          } catch {
+            const rawText = await response.text().catch(() => "");
+            if (rawText) errDetail += `: ${rawText.slice(0, 120)}`;
+          }
+          console.warn("Streaming endpoint failed, falling back to standard endpoint:", errDetail);
+          streamFailed = true;
+        } else if (!response.body) {
+          streamFailed = true;
+        } else {
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let pendingChunk = "";
+
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            pendingChunk += decoder.decode(value, { stream: true });
+            const lines = pendingChunk.split("\n\n");
+            pendingChunk = lines.pop() || "";
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed.startsWith("data:")) continue;
+
+              const jsonPayload = trimmed.replace(/^data:\s*/, "");
+              try {
+                const event = JSON.parse(jsonPayload);
+                if (event.type === "status") {
+                  setStreamStatus(event.message);
+                } else if (event.type === "token") {
+                  setStreamBuffer((prev) => prev + event.chunk);
+                } else if (event.type === "complete") {
+                  completedResult = event.data as AnalysisResult;
+                  setAnalysis(completedResult);
+                  if (completedResult.currency) {
+                    const found = SUPPORTED_CURRENCIES.find(
+                      (c) => c.code.toUpperCase() === String(completedResult?.currency).toUpperCase()
+                    );
+                    if (found) {
+                      handleCurrencyChange(found.code);
+                    }
+                  }
+                } else if (event.type === "error") {
+                  throw new Error(event.message || "Streaming analysis failed.");
+                }
+              } catch (e: unknown) {
+                if (e instanceof Error && e.message.includes("Streaming analysis failed")) {
+                  throw e;
                 }
               }
-            } else if (event.type === "error") {
-              throw new Error(event.message || "Streaming analysis failed.");
-            }
-          } catch (e: unknown) {
-            if (e instanceof Error && e.message.includes("Streaming analysis failed")) {
-              throw e;
             }
           }
         }
+      } catch (streamErr) {
+        console.warn("Streaming connection error, falling back to standard API:", streamErr);
+        streamFailed = true;
       }
 
-      if (!completedResult) {
-        // Fallback: If streaming didn't emit complete event, try traditional endpoint
+      // 2. Fallback: If streaming failed or didn't emit complete event, use traditional endpoint
+      if (!completedResult || streamFailed) {
+        setStreamStatus("Connecting to standard analysis engine...");
         const fallbackRes = await fetch("/api/analyze", {
           method: "POST",
           body: formData,
         });
-        if (fallbackRes.ok) {
-          const fallbackData = await fallbackRes.json();
-          setAnalysis(fallbackData);
+
+        if (!fallbackRes.ok) {
+          let errDetail = `HTTP ${fallbackRes.status} (${fallbackRes.statusText || "Server Error"})`;
+          try {
+            const errorData = await fallbackRes.json();
+            errDetail = errorData.error || errorData.detail || errDetail;
+          } catch {
+            const rawText = await fallbackRes.text().catch(() => "");
+            if (rawText) errDetail += `: ${rawText.slice(0, 150)}`;
+          }
+
+          if (fallbackRes.status === 504 || fallbackRes.status === 502) {
+            throw new Error(
+              `Backend waking up or timed out (${errDetail}). If your Render service was idle, it may take 45-60s to wake up on the free tier. Please retry in a moment.`
+            );
+          } else if (fallbackRes.status === 404) {
+            throw new Error(
+              `Backend route not found (404). Check that BACKEND_URL in Vercel environment variables points to your Render backend (without trailing slash).`
+            );
+          } else {
+            throw new Error(errDetail);
+          }
+        }
+
+        const fallbackData = await fallbackRes.json();
+        setAnalysis(fallbackData);
+        if (fallbackData.currency) {
+          const found = SUPPORTED_CURRENCIES.find(
+            (c) => c.code.toUpperCase() === String(fallbackData.currency).toUpperCase()
+          );
+          if (found) {
+            handleCurrencyChange(found.code);
+          }
         }
       }
     } catch (err: unknown) {
       console.error("Analysis failed:", err);
-      const message =
+      let message =
         err instanceof Error
           ? err.message
           : "Analysis failed. Please check your PDF and try again.";
+
+      if (message.includes("Failed to fetch") || message.includes("NetworkError")) {
+        message =
+          "Network Error: Unable to reach backend server. Please verify your Vercel BACKEND_URL environment variable and ensure your Render service is active.";
+      }
+
       setError(message);
       setAnalysis(null);
     } finally {
