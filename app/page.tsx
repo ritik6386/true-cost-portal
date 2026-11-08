@@ -196,30 +196,13 @@ export default function Home() {
       return;
     }
 
-    // IMMEDIATELY switch view to the audit report cards
-    // The skeleton cards and typewriter animation will take focus instantly
+    // Immediately trigger fullscreen loading stage
     setLoading(true);
+    setAnalysis(null);
     setError(null);
     setFileName(file.name);
     setStreamBuffer("");
-    setStreamStatus("Connecting to document streaming enclave...");
-
-    // Seed immediate placeholder state so the dashboard mounts without any delay
-    setAnalysis({
-      principal: 0,
-      apr: 0,
-      termMonths: 0,
-      currency: "INR",
-      currencySymbol: "₹",
-      gotchas: [
-        "Analyzing fine print for prepayment and foreclosure penalties...",
-        "Evaluating surge interest rate clauses on late payments...",
-        "Auditing dispute resolution & binding arbitration mandates...",
-      ],
-      plainEnglishSummary: "Scanning loan agreement and decompiling repayment schedule in volatile RAM...",
-      totalPayback: 0,
-      schedule: [],
-    });
+    setStreamStatus("Scanning loan agreement & decompiling repayment schedule in volatile RAM...");
 
     try {
       const formData = new FormData();
@@ -304,7 +287,6 @@ export default function Home() {
           ? err.message
           : "Analysis failed. Please check your PDF and try again.";
       setError(message);
-      // Reset back to uploader view if an error occurred
       setAnalysis(null);
     } finally {
       setLoading(false);
@@ -316,12 +298,13 @@ export default function Home() {
     setError(null);
     setFileName("Sample-Auto-Loan-Agreement.pdf");
     setStreamBuffer("");
-    setStreamStatus("Simulating live contract extraction...");
+    setStreamStatus("Scanning loan agreement & decompiling repayment schedule in volatile RAM...");
 
-    // Immediately switch view to results
-    setAnalysis(SAMPLE_CONTRACT);
-    setSelectedCurrency("INR");
-    setLoading(false);
+    setTimeout(() => {
+      setAnalysis(SAMPLE_CONTRACT);
+      setSelectedCurrency("INR");
+      setLoading(false);
+    }, 1400);
   };
 
   const handleReset = () => {
@@ -533,7 +516,113 @@ export default function Home() {
 
       {/* Main Single-Viewport Geometric Layout Container */}
       <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex-1 flex flex-col justify-center min-h-0">
-        {!analysis ? (
+        {loading ? (
+          /* ==========================================================
+             VIEW C: Full-Window Forensic Decompilation Loading Screen
+             Replaces the dropzone immediately on upload with live typewriter log
+             ========================================================== */
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.25 }}
+            className="w-full max-w-3xl mx-auto p-6 sm:p-8 rounded-3xl border shadow-2xl backdrop-blur-xl flex flex-col justify-between my-auto transition-all"
+            style={{
+              backgroundColor: isDark ? "rgba(9, 9, 11, 0.85)" : "rgba(255, 255, 255, 0.95)",
+              borderColor: isDark ? "rgba(168, 85, 247, 0.3)" : "rgba(219, 234, 254, 1)",
+              boxShadow: isDark ? "0 0 50px rgba(168,85,247,0.15)" : "0 20px 40px rgba(37,99,235,0.08)",
+            }}
+          >
+            {/* Top Status Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`size-9 rounded-xl flex items-center justify-center ${
+                    isDark
+                      ? "bg-purple-500/20 text-cyan-400 border border-purple-500/40"
+                      : "bg-blue-50 text-blue-600 border border-blue-200"
+                  }`}
+                >
+                  <FileText size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                    Volatile Memory Decompilation
+                  </h3>
+                  <p className="text-[11px] font-mono text-slate-500 dark:text-zinc-400">
+                    Target: {fileName || "Uploaded Contract.pdf"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="size-2 rounded-full bg-cyan-400 animate-ping" />
+                <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-600 dark:text-cyan-400 font-bold">
+                  Enclave Active
+                </span>
+              </div>
+            </div>
+
+            {/* Typewriter Forensic Progress Log */}
+            <div className="my-6 space-y-4">
+              <div
+                className={`p-4 rounded-2xl border ${
+                  isDark
+                    ? "bg-zinc-950/80 border-zinc-800 text-zinc-200"
+                    : "bg-slate-50 border-slate-200/80 text-slate-800"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2 text-xs font-mono font-semibold text-blue-600 dark:text-cyan-400">
+                  <div className="size-2 rounded-full bg-blue-600 dark:bg-cyan-400 animate-pulse" />
+                  <span>PHASE 01 // LOAN_DECOMPILATION</span>
+                </div>
+                <p className="text-xs sm:text-sm leading-relaxed font-sans min-h-[38px]">
+                  <TypewriterText
+                    text="Scanning loan agreement & decompiling repayment schedule in volatile RAM..."
+                    speed={14}
+                    delay={100}
+                  />
+                </p>
+              </div>
+
+              <div
+                className={`p-4 rounded-2xl border ${
+                  isDark
+                    ? "bg-zinc-950/80 border-purple-500/25 text-zinc-200"
+                    : "bg-purple-50/50 border-purple-200/70 text-slate-800"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2 text-xs font-mono font-semibold text-purple-600 dark:text-purple-400">
+                  <div className="size-2 rounded-full bg-purple-600 dark:bg-purple-400 animate-pulse" />
+                  <span>PHASE 02 // PREDATORY_CLAUSE_AUDIT</span>
+                </div>
+                <p className="text-xs sm:text-sm leading-relaxed font-sans min-h-[38px]">
+                  <TypewriterText
+                    text="Analyzing fine print clauses for prepayment penalties, surge default rates, and mandatory binding arbitration..."
+                    speed={12}
+                    delay={800}
+                  />
+                </p>
+              </div>
+            </div>
+
+            {/* Stream token chunk ticker (if tokens arriving) */}
+            {streamBuffer && (
+              <div className="mb-4 p-2.5 rounded-xl bg-slate-950 text-cyan-300 font-mono text-[10px] max-h-20 overflow-y-auto leading-relaxed border border-slate-800">
+                <span className="text-slate-500 block mb-1">{"// INCOMING_STREAM_CHUNK"}</span>
+                <span className="whitespace-pre-wrap break-all">{streamBuffer.slice(-160)}</span>
+              </div>
+            )}
+
+            {/* Bottom Enclave Safeguard Bar */}
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-zinc-800 text-[11px] font-mono text-slate-500 dark:text-zinc-500">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck size={13} className="text-emerald-500" />
+                Zero Disk Persistence Enforced
+              </span>
+              <span>COMPUTING_DETERMINISTIC_MATH...</span>
+            </div>
+          </motion.div>
+        ) : !analysis ? (
           /* ==========================================================
              VIEW A: Pre-Analysis Compact Viewport (Hero + Uploader + Feature Grid)
              Fits 100% within 1080p and 900p displays with 0 scroll needed
