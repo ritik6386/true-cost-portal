@@ -1076,7 +1076,7 @@ export default function Home() {
                       {(analysis.gotchas ?? []).slice(0, 3).map((gotcha, index) => (
                         <li
                           key={index}
-                          className="flex items-start gap-2 text-xs sm:text-[13px] text-slate-800 dark:text-zinc-150 leading-snug font-medium"
+                          className="flex items-start gap-2 text-xs sm:text-[13px] text-slate-800 dark:text-zinc-100 leading-snug font-medium"
                         >
                           <span
                             className={`size-4 rounded-md font-mono text-[10px] flex items-center justify-center shrink-0 mt-0.5 ${
@@ -1087,11 +1087,12 @@ export default function Home() {
                           >
                             0{index + 1}
                           </span>
-                          <span className="line-clamp-2">
+                          <span className="line-clamp-2 text-slate-800 dark:text-zinc-100">
                             <TypewriterText
                               text={gotcha}
                               speed={10}
                               delay={350 + index * 400}
+                              className="dark:text-zinc-100"
                             />
                           </span>
                         </li>
@@ -1099,7 +1100,7 @@ export default function Home() {
                     </ul>
                   </div>
 
-                  <div className="text-[11px] font-mono font-semibold text-slate-500 dark:text-zinc-400 pt-2 border-t border-slate-100 dark:border-zinc-800 mt-2">
+                  <div className="text-[11px] font-mono font-semibold text-slate-500 dark:text-zinc-300 pt-2 border-t border-slate-100 dark:border-zinc-800 mt-2">
                     FORENSIC_FLAG: 3_HIGH_RISK_CONDITIONS
                   </div>
                 </div>
